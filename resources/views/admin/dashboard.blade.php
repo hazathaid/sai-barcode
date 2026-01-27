@@ -72,6 +72,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <a href="{{ route('admin.events.tickets', $ev) }}" class="px-3 py-2 rounded-lg bg-indigo-600 text-white">Tickets</a>
+                            <a href="{{ route('admin.events.scanner', $ev) }}" class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Scanner</a>
                         </div>
                     </div>
                 @empty

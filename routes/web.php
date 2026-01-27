@@ -46,6 +46,10 @@ Route::get('/admin/events/{event}/scanner', [AdminScannerController::class, 'sho
     ->middleware('auth')
     ->name('admin.events.scanner');
 
+// API-like checkin endpoint routed through web middleware so session auth + CSRF work
+Route::post('/api/admin/events/{event}/checkin', [\App\Http\Controllers\AdminCheckinController::class, 'checkin'])
+    ->middleware('auth');
+
 // Simple auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');

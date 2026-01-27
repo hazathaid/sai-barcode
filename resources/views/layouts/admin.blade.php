@@ -24,7 +24,7 @@
                     <span class="text-indigo-600">🏠</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50">
+                <a href="{{ route('admin.events.index') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50">
                     <span class="text-indigo-600">📋</span>
                     <span>Events</span>
                 </a>
@@ -65,5 +65,6 @@
             sb.classList.toggle('hidden');
         });
     </script>
+    @stack('scripts')
 </body>
 </html>
