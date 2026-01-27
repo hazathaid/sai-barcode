@@ -29,6 +29,7 @@ class RegisterController
             [
                 'name' => $data['name'],
                 'phone' => $data['phone'] ?? null,
+                'kelas' => $data['class_room'] ?? null,
                 'qr_token' => bin2hex(random_bytes(32)),
             ]
         );

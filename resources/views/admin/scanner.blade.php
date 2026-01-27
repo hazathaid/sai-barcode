@@ -1,170 +1,99 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Scanner - {{ $event->name }}</title>
-    <style>
-        body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px}
-        #reader{width:100%;max-width:720px;margin:12px auto}
-        .status{padding:12px;margin-top:12px;border-radius:6px;color:#fff}
-        .status.ok{background:#2ecc71}
-        .status.already{background:#f1c40f;color:#111}
-        .status.invalid{background:#e74c3c}
-        button{padding:8px 12px;margin-right:8px}
-    </style>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-</head>
-<body>
-    <h1>Scanner: {{ $event->name }}</h1>
+@extends('layouts.admin')
 
-    <div>
-        <button id="startBtn">Start Scan</button>
-        <button id="stopBtn" disabled>Stop Scan</button>
-    </div>
+@section('page-title','Scanner')
 
-    <div id="reader"></div>
+@section('content')
+<div class="max-w-3xl mx-auto">
+    <x-admin.card>
+        <div class="flex flex-col gap-4">
+            <div class="text-center">
+                <h3 class="text-xl font-semibold">Scanner — {{ $event->name }}</h3>
+                <p class="text-sm text-gray-500">Arahkan kamera ke QR code peserta. Scanner bekerja dengan URL /t/{token} atau token mentah.</p>
+            </div>
 
-    <div id="output"></div>
+            <div class="flex justify-center">
+                <div id="reader" class="bg-gray-100 rounded-xl overflow-hidden w-full max-w-md min-w-[280px] aspect-square flex items-center justify-center"></div>
+            </div>
 
-    <script>
-        const eventId = {{ (int) $event->id }};
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const output = document.getElementById('output');
-        let html5QrCode = null;
-        let running = false;
+            <div class="flex items-center justify-center gap-3">
+                <x-admin.button id="startBtn" class="bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500">Start Scan</x-admin.button>
+                <x-admin.button id="stopBtn" class="bg-gray-200 text-gray-800 hover:bg-gray-300" disabled>Stop Scan</x-admin.button>
+            </div>
 
-        function loadScript(url){
-            return new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = url;
-                s.onload = resolve;
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        }
+            <div id="status" class="mt-4"></div>
+        </div>
+    </x-admin.card>
+    <div class="mt-4 text-center text-sm text-gray-500">Ensure your browser allows camera access and that you're logged in.</div>
+</div>
 
-        async function ensureLibrary(){
-            if (typeof Html5Qrcode !== 'undefined') return;
+@push('scripts')
+<script>
+    const eventId = {{ (int) $event->id }};
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusEl = document.getElementById('status');
+    const readerEl = document.getElementById('reader');
+    let html5QrCode = null; let running = false; let cooldown = false;
 
-            // Try local first (public/js/html5-qrcode.min.js), then CDN
-            const local = '/js/html5-qrcode.min.js';
-            try {
-                await loadScript(local);
-                return;
-            } catch (e) {
-                console.warn('Local html5-qrcode not found, falling back to CDN', e);
-            }
+    function loadScript(url){
+        return new Promise((resolve,reject)=>{
+            const s = document.createElement('script'); s.src = url; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+        });
+    }
 
-            try {
-                await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js');
-                return;
-            } catch(e) {
-                console.error('Failed to load html5-qrcode library from CDN', e);
-                throw e;
-            }
-        }
+    async function ensureLibrary(){
+        if (typeof Html5Qrcode !== 'undefined') return;
+        try { await loadScript('/js/html5-qrcode.min.js'); return; } catch(e){ /* fall through */ }
+        await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js');
+    }
 
-        function showStatus(type, message, ticket){
-            output.innerHTML = '';
-            const el = document.createElement('div');
-            el.className = 'status ' + type;
-            el.textContent = message;
-            output.appendChild(el);
-            if (ticket) {
-                const info = document.createElement('div');
-                info.style.marginTop = '8px';
-                info.textContent = ticket.name + ' — ' + ticket.email;
-                output.appendChild(info);
-            }
-        }
+    function renderAlert(type, message, ticket){
+        const variants = {
+            ok: ['bg-emerald-50 text-emerald-800'],
+            already: ['bg-amber-50 text-amber-800'],
+            invalid: ['bg-rose-50 text-rose-800']
+        };
+        const cls = variants[type] ? variants[type].join(' ') : 'bg-gray-50 text-gray-800';
+        let inner = `<div class="p-4 rounded-xl ${cls}">` + `<div class="font-semibold">${message}</div>`;
+        if (ticket) inner += `<div class="text-sm text-gray-600 mt-1">${ticket.name} — ${ticket.email}</div>`;
+        inner += `</div>`;
+        statusEl.innerHTML = inner;
+    }
 
-        async function handleToken(raw){
-            // raw may be a URL like https://.../t/<token> or just the token
-            let token = raw;
-            try {
-                const u = new URL(raw);
-                const parts = u.pathname.split('/').filter(Boolean);
-                if (parts.length && parts[0] === 't') token = parts[1] || token;
-            } catch(e) {
-                // not a URL, keep raw
-            }
+    async function handleToken(raw){
+        if (cooldown) return;
+        cooldown = true;
+        setTimeout(()=>{ cooldown = false; }, 1200);
 
-            // POST to API
-            const res = await fetch('/api/admin/events/' + eventId + '/checkin', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type':'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ qr_token: token, device_info: navigator.userAgent })
-            });
+        let token = raw;
+        try { const u = new URL(raw); const parts = u.pathname.split('/').filter(Boolean); if (parts[0] === 't') token = parts[1] || token; } catch(e) {}
 
-            if (res.status === 404) {
-                showStatus('invalid', 'INVALID: QR tidak valid');
-                return;
-            }
-
-            const json = await res.json();
-            if (json.status === 'OK') {
-                showStatus('ok', json.message, json.ticket);
-            } else if (json.status === 'ALREADY') {
-                showStatus('already', json.message, json.ticket);
-            } else {
-                showStatus('invalid', json.message || 'QR tidak valid');
-            }
-        }
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) console.warn('getUserMedia not available in this browser');
-
-        startBtn.addEventListener('click', async function(){
-            if (running) return;
-            console.log('Start scan pressed');
-
-            try {
-                await ensureLibrary();
-            } catch (e) {
-                console.error('Failed to load html5-qrcode library', e);
-                alert('Failed to load scanner library. Check network or CDN access.');
-                return;
-            }
-
-            if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
-
-            try {
-                const cameras = await Html5Qrcode.getCameras();
-                console.log('Cameras found:', cameras);
-                const cameraId = (cameras && cameras[0]) ? cameras[0].id : null;
-                const cameraConfig = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: 'environment' };
-
-                await html5QrCode.start(
-                    cameraConfig,
-                    { fps: 10, qrbox: 250 },
-                    (decodedText) => { console.log('Decoded:', decodedText); handleToken(decodedText); },
-                    (errorMessage) => { console.debug('QR parse error', errorMessage); }
-                );
-
-                running = true; startBtn.disabled = true; stopBtn.disabled = false;
-            } catch (err) {
-                console.error('Camera start failed', err);
-                if (err && err.name === 'NotAllowedError') {
-                    alert('Camera access was denied. Please allow camera permission and try again.');
-                } else {
-                    alert('Camera start failed: ' + err);
-                }
-            }
+        const res = await fetch('/api/admin/events/' + eventId + '/checkin', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ qr_token: token, device_info: navigator.userAgent })
         });
 
-        stopBtn.addEventListener('click', function(){
-            if (!running) return;
-            html5QrCode.stop().then(() => {
-                running = false; startBtn.disabled = false; stopBtn.disabled = true;
-            }).catch(err => { alert('Stop failed: ' + err); });
-        });
-    </script>
+        if (res.status === 404) { renderAlert('invalid','QR tidak valid'); return; }
+        const json = await res.json();
+        if (json.status === 'OK') { renderAlert('ok', json.message, json.ticket); }
+        else if (json.status === 'ALREADY') { renderAlert('already', json.message, json.ticket); }
+        else { renderAlert('invalid', json.message || 'QR tidak valid'); }
+    }
 
-</body>
-</html>
+    startBtn.addEventListener('click', async function(){
+        if (running) return; try{ await ensureLibrary(); }catch(e){ alert('Scanner library failed to load.'); return; }
+        if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
+        try{
+            const cameras = await Html5Qrcode.getCameras(); const cameraId = (cameras && cameras[0]) ? cameras[0].id : null;
+            const cameraConfig = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: 'environment' };
+            await html5QrCode.start(cameraConfig, { fps:10, qrbox: {width:320, height:320} }, (decoded)=>{ handleToken(decoded); }, ()=>{} );
+            running = true; startBtn.disabled = true; stopBtn.disabled = false;
+        } catch(err){ alert('Camera start failed: ' + err); }
+    });
+
+    stopBtn.addEventListener('click', function(){ if (!running) return; html5QrCode.stop().then(()=>{ running=false; startBtn.disabled=false; stopBtn.disabled=true; }).catch(()=>{}); });
+</script>
+@endpush
+
+@endsection

@@ -11,6 +11,29 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Admin dashboard (simple route)
+use App\Models\Event;
+use App\Http\Controllers\AdminEventController;
+
+Route::get('/admin', function(){
+    $events = Event::orderByDesc('starts_at')->get();
+    return view('admin.dashboard', compact('events'));
+})->middleware('auth')->name('admin.dashboard');
+
+// Admin events CRUD
+Route::middleware('auth')->prefix('admin/events')->name('admin.events.')->group(function(){
+    Route::get('/', [AdminEventController::class, 'index'])->name('index');
+    Route::get('/create', [AdminEventController::class, 'create'])->name('create');
+    Route::post('/', [AdminEventController::class, 'store'])->name('store');
+    Route::get('/{event}/edit', [AdminEventController::class, 'edit'])->name('edit');
+    Route::put('/{event}', [AdminEventController::class, 'update'])->name('update');
+    Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
+});
+
+// Admin event tickets list
+use App\Http\Controllers\AdminTicketController;
+Route::get('/admin/events/{event}/tickets', [AdminTicketController::class, 'index'])->middleware('auth')->name('admin.events.tickets');
+
 // Public event pages and registration
 Route::get('/e/{event:slug}', [EventController::class, 'show'])->name('events.show');
 Route::post('/e/{event:slug}/register', [RegisterController::class, 'store'])->name('events.register');

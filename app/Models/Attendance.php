@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model
+class Attendance extends Model
 {
     use HasFactory;
 
@@ -15,13 +15,13 @@ class Ticket extends Model
         'checked_in_at' => 'datetime',
     ];
 
-    public function event()
+    public function ticket()
     {
-        return $this->belongsTo(Event::class);
+        return $this->belongsTo(Ticket::class);
     }
 
-    public function attendance()
+    public function admin()
     {
-        return $this->hasOne(Attendance::class);
+        return $this->belongsTo(User::class, 'checked_in_by');
     }
 }

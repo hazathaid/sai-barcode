@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Ticket;
-use App\Models\CheckIn;
+use App\Models\Attendance;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
 class AdminCheckinController
@@ -22,48 +24,58 @@ class AdminCheckinController
 
         $token = trim($data['qr_token']);
 
-        $ticket = Ticket::where('event_id', $event->id)->where('qr_token', $token)->first();
+        $ticket = Ticket::with(['event', 'attendance'])->where('event_id', $event->id)->where('qr_token', $token)->first();
 
         if (! $ticket) {
             return response()->json(['status' => 'INVALID', 'message' => 'QR tidak valid'], 404);
         }
 
-        if ($ticket->checked_in_at) {
+        if ($ticket->attendance) {
             return response()->json([
                 'status' => 'ALREADY',
-                'message' => 'Sudah check-in pada ' . $ticket->checked_in_at->format('j M Y H:i'),
+                'message' => 'Sudah check-in pada ' . $ticket->attendance->checked_in_at->format('j M Y H:i'),
                 'ticket' => ['name' => $ticket->name, 'email' => $ticket->email],
+                'attendance' => ['checked_in_at' => $ticket->attendance->checked_in_at->toDateTimeString(), 'checked_in_by' => $ticket->attendance->checked_in_by],
             ]);
         }
 
-        // Attempt atomic update to avoid race conditions
         $now = now();
-        $updated = Ticket::where('id', $ticket->id)->whereNull('checked_in_at')->update(['checked_in_at' => $now]);
+        $adminId = auth()->id();
 
-        if (! $updated) {
-            // someone else likely checked-in at the same time
-            $ticket->refresh();
-            return response()->json([
-                'status' => 'ALREADY',
-                'message' => 'Sudah check-in pada ' . ($ticket->checked_in_at ? $ticket->checked_in_at->format('j M Y H:i') : '—'),
-                'ticket' => ['name' => $ticket->name, 'email' => $ticket->email],
+        try {
+            DB::beginTransaction();
+
+            // create attendance (unique ticket_id enforced at DB level)
+            $attendance = Attendance::create([
+                'ticket_id' => $ticket->id,
+                'checked_in_by' => $adminId,
+                'checked_in_at' => $now,
             ]);
-        }
 
-        // create check_in record
-        $checkIn = CheckIn::create([
-            'event_id' => $event->id,
-            'ticket_id' => $ticket->id,
-            'admin_user_id' => null,
-            'checked_in_at' => $now,
-            'ip_address' => $request->ip(),
-            'device_info' => $data['device_info'] ?? null,
-        ]);
+            // update ticket checked_in_at for quick lookups
+            Ticket::where('id', $ticket->id)->update(['checked_in_at' => $now]);
+
+            DB::commit();
+        } catch (QueryException $e) {
+            DB::rollBack();
+            // Unique violation or race — treat as already checked in
+            $ticket->refresh();
+            if ($ticket->attendance) {
+                return response()->json([
+                    'status' => 'ALREADY',
+                    'message' => 'Sudah check-in pada ' . $ticket->attendance->checked_in_at->format('j M Y H:i'),
+                    'ticket' => ['name' => $ticket->name, 'email' => $ticket->email],
+                ]);
+            }
+
+            return response()->json(['status' => 'ERROR', 'message' => 'Gagal melakukan check-in'], 500);
+        }
 
         return response()->json([
             'status' => 'OK',
             'message' => 'Check-in sukses: ' . $ticket->name,
             'ticket' => ['name' => $ticket->name, 'email' => $ticket->email],
+            'attendance' => ['checked_in_at' => $now->toDateTimeString(), 'checked_in_by' => $adminId],
         ]);
     }
 }

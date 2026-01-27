@@ -12,6 +12,7 @@ class EventController
      */
     public function show(Event $event)
     {
-        return view('events.show', compact('event'));
+        $classrooms = \App\Models\ClassRoom::all();
+        return view('events.show', compact('event', 'classrooms'));
     }
 }
