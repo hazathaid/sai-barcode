@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{{ $event->name }}</title>
-    @vite(['resources/css/app.css'])
+    @if (env('USE_TAILWIND_CDN'))
+        <script src="https://cdn.tailwindcss.com"></script>
+    @else
+        @vite(['resources/css/app.css'])
+    @endif
     <style>body{background-color:#f8fafc}</style>
 </head>
 <body class="min-h-screen py-10">

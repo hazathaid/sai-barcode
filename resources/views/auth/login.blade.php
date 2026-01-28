@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Login</title>
-    @vite(['resources/css/app.css'])
+    @if (env('USE_TAILWIND_CDN'))
+        <script src="https://cdn.tailwindcss.com"></script>
+    @else
+        @vite(['resources/css/app.css','resources/js/app.js'])
+    @endif
     <style>body{background-color:#f8fafc}</style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
