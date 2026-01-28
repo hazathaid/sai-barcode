@@ -8,7 +8,8 @@ use App\Http\Controllers\AdminScannerController;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $events = App\Models\Event::orderByDesc('starts_at')->get();
+    return view('events.index', compact('events'));
 });
 
 // Admin dashboard (simple route)
