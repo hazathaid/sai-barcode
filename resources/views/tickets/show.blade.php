@@ -4,29 +4,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Ticket - {{ $ticket->event->name }} - {{ $ticket->name }}</title>
-    <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px;max-width:820px;margin:auto}button{padding:8px 12px;margin-top:12px}</style>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f7f7fb;color:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+      .card{max-width:720px;width:100%;background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;text-align:center}
+      button{padding:8px 12px;margin-top:12px;border-radius:6px}
+    </style>
 </head>
 <body>
-    <h1>{{ $ticket->event->name }}</h1>
+@extends('layouts.app')
 
-    <p><strong>Participant:</strong> {{ $ticket->name }}</p>
-    <p><strong>Email:</strong> {{ $ticket->email }}</p>
-    <p><strong>Attendance:</strong>
-        @if($ticket->checked_in_at)
-            {{ $ticket->checked_in_at->format('j M Y H:i') }}
-        @else
-            Not checked in
-        @endif
-    </p>
+@section('title', $ticket->event->name . ' — ' . ($ticket->name ?: 'Tiket'))
 
-    <div>
-        {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(220)
-            ->generate(url('/t/'.$ticket->qr_token)) !!}
+@section('content')
+    <div class="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+        <h1 class="text-2xl font-semibold">{{ $ticket->event->name }}</h1>
+
+        <p class="mt-3 text-gray-700"><strong>Peserta:</strong> {{ $ticket->name }}</p>
+        <p class="text-gray-700"><strong>Email:</strong> {{ $ticket->email }}</p>
+        <p class="text-gray-700"><strong>Hadir:</strong>
+            @if($ticket->checked_in_at)
+                {{ $ticket->checked_in_at->format('j M Y H:i') }}
+            @else
+                Belum check-in
+            @endif
+        </p>
+
+        <div class="mt-6">
+            {!! \SimpleSoftwareIO\QrCode::size(220)->generate(url('/t/'.$ticket->qr_token)) !!}
+        </div>
+
+        <div class="mt-6">
+            <button id="copyBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salin tautan tiket</button>
+        </div>
     </div>
-
-    <div>
-        <button id="copyBtn">Copy Ticket Link</button>
-    </div>
+@endsection
 
     <script>
         (function(){

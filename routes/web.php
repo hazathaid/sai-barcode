@@ -56,3 +56,15 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Barcode lookup by email+phone (can return multiple matches)
+use App\Http\Controllers\BarcodeController;
+use Illuminate\Auth\Middleware\Authenticate;
+
+Route::get('/barcode', [BarcodeController::class, 'index'])
+    ->withoutMiddleware([Authenticate::class])
+    ->name('barcode.index');
+// Get barcode image by ticket id
+Route::get('/barcode/{ticket}', [BarcodeController::class, 'show'])
+    ->withoutMiddleware([Authenticate::class])
+    ->name('barcode.show');
+

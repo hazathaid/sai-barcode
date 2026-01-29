@@ -12,7 +12,16 @@ class TicketController
      */
     public function show($token)
     {
-        $ticket = Ticket::with('event')->where('qr_token', $token)->firstOrFail();
+        // Allow lookup by numeric ticket id or by qr_token
+        if (is_numeric($token)) {
+            $ticket = Ticket::with('event')->find($token);
+        } else {
+            $ticket = Ticket::with('event')->where('qr_token', $token)->first();
+        }
+
+        if (! $ticket) {
+            return response()->view('tickets.notfound', ['token' => $token], 404);
+        }
 
         return view('tickets.show', compact('ticket'));
     }

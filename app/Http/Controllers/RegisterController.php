@@ -16,23 +16,23 @@ class RegisterController
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'required_without:phone', 'max:255'],
+            'phone' => ['nullable', 'string', 'required_without:email', 'max:50'],
         ]);
 
         if ($event->status !== 'published') {
             abort(403, 'Event is not open for registration.');
         }
 
-        $ticket = Ticket::firstOrCreate(
-            ['event_id' => $event->id, 'email' => $data['email']],
-            [
-                'name' => $data['name'],
-                'phone' => $data['phone'] ?? null,
-                'kelas' => $data['class_room'] ?? null,
-                'qr_token' => bin2hex(random_bytes(32)),
-            ]
-        );
+        // Always create a new ticket record so each registration has its own ticket id
+        $ticket = Ticket::create([
+            'event_id' => $event->id,
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'kelas' => $data['class_room'] ?? null,
+            'qr_token' => bin2hex(random_bytes(32)),
+        ]);
 
         // TODO: dispatch email job to send ticket/QR to attendee
 
