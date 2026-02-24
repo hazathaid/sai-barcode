@@ -55,7 +55,7 @@
             <h3 class="text-lg font-semibold mb-2">Quick actions</h3>
             <div class="flex flex-col gap-2">
                 <a href="#" class="inline-block text-indigo-600 hover:underline">Create event</a>
-                <a href="#" class="inline-block text-indigo-600 hover:underline">Export attendees</a>
+                <a href="{{ route('admin.reports.tickets') }}" class="inline-block text-indigo-600 hover:underline">Export attendees</a>
             </div>
         </x-admin.card>
     </div>
@@ -73,6 +73,7 @@
                         <div class="flex items-center gap-2">
                             <a href="{{ route('admin.events.tickets', $ev) }}" class="px-3 py-2 rounded-lg bg-indigo-600 text-white">Tickets</a>
                             <a href="{{ route('admin.events.scanner', $ev) }}" class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Scanner</a>
+                            <a href="{{ route('admin.reports.tickets', ['event_id' => $ev->id]) }}" class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Export</a>
                         </div>
                     </div>
                 @empty

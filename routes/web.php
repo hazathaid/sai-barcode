@@ -59,6 +59,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // Barcode lookup by email+phone (can return multiple matches)
 use App\Http\Controllers\BarcodeController;
 use Illuminate\Auth\Middleware\Authenticate;
+use App\Http\Controllers\TicketExportController;
 
 Route::get('/barcode', [BarcodeController::class, 'index'])
     ->withoutMiddleware([Authenticate::class])
@@ -67,4 +68,9 @@ Route::get('/barcode', [BarcodeController::class, 'index'])
 Route::get('/barcode/{ticket}', [BarcodeController::class, 'show'])
     ->withoutMiddleware([Authenticate::class])
     ->name('barcode.show');
+
+// Tickets Excel report (optional ?event_id=)
+Route::get('/admin/reports/tickets', [TicketExportController::class, 'export'])
+    ->middleware('auth')
+    ->name('admin.reports.tickets');
 
