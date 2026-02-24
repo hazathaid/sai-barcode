@@ -15,11 +15,11 @@ Route::get('/', function () {
 // Admin dashboard (simple route)
 use App\Models\Event;
 use App\Http\Controllers\AdminEventController;
+use App\Http\Controllers\AdminDashboardController;
 
-Route::get('/admin', function(){
-    $events = Event::orderByDesc('starts_at')->get();
-    return view('admin.dashboard', compact('events'));
-})->middleware('auth')->name('admin.dashboard');
+Route::get('/admin', [AdminDashboardController::class, 'index'])
+    ->middleware('auth')
+    ->name('admin.dashboard');
 
 // Admin events CRUD
 Route::middleware('auth')->prefix('admin/events')->name('admin.events.')->group(function(){

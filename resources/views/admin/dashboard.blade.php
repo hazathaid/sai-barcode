@@ -40,14 +40,17 @@
         <x-admin.card class="lg:col-span-2">
             <h3 class="text-lg font-semibold mb-2">Recent registrations</h3>
             <div class="divide-y divide-gray-100">
-                {{-- example rows --}}
-                <div class="py-3 flex items-center justify-between">
-                    <div>
-                        <div class="font-medium">John Doe</div>
-                        <div class="text-sm text-gray-500">Seminar Laravel QR 2026 — john@example.com</div>
+                @forelse($recentRegistrations as $ticket)
+                    <div class="py-3 flex items-center justify-between">
+                        <div>
+                            <div class="font-medium">{{ $ticket->name }}</div>
+                            <div class="text-sm text-gray-500">{{ $ticket->event?->name ?? '—' }} — {{ $ticket->email ?? '—' }}</div>
+                        </div>
+                        <div class="text-sm text-gray-500">{{ $ticket->created_at->format('H:i') }}</div>
                     </div>
-                    <div class="text-sm text-gray-500">{{ now()->subHour()->format('H:i') }}</div>
-                </div>
+                @empty
+                    <div class="py-3">No registrations yet.</div>
+                @endforelse
             </div>
         </x-admin.card>
 
