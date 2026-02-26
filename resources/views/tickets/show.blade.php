@@ -30,7 +30,7 @@
         </p>
 
         <div class="mt-6">
-            {!! \SimpleSoftwareIO\QrCode::size(220)->generate(url('/t/'.$ticket->qr_token)) !!}
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(220)->generate(url('/t/'.$ticket->qr_token)) !!}
         </div>
 
         <div class="mt-6">
