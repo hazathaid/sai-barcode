@@ -12,7 +12,7 @@
     <style>body{background-color:#f8fafc}</style>
 </head>
 <body class="min-h-screen py-10">
-    <div class="max-w-5xl mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
                 <h1 class="text-2xl font-semibold text-gray-800">{{ $event->name }}</h1>
@@ -52,7 +52,7 @@
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label for="parent_title" class="block text-sm font-medium text-gray-700">Ortu</label>
-                            <select id="parent_title" name="parent_title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                            <select id="parent_title" name="parent_title" class="mt-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
                                 <option value="">-- Pilih --</option>
                                 <option value="Ayah" {{ old('parent_title') == 'Ayah' ? 'selected' : '' }}>Ayah</option>
                                 <option value="Bunda" {{ old('parent_title') == 'Bunda' ? 'selected' : '' }}>Bunda</option>
@@ -87,7 +87,7 @@
                                     <div>
                                         <label class="block text-sm text-gray-600">Kelas</label>
                                         @if(isset($classrooms) && count($classrooms))
-                                            <select name="children[][class_room]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
+                                            <select name="children[][class_room]" class="mt-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white">
                                                 <option value="">-- Pilih Kelas --</option>
                                                 @foreach($classrooms as $cr)
                                                     @php
@@ -152,7 +152,7 @@
                 try {
                     const cls = JSON.parse(classrooms || '[]');
                     if (cls && cls.length) {
-                        let options = '<select name="children[][class_room]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"><option value="">-- Pilih Kelas --</option>';
+                        let options = '<select name="children[][class_room]" class="mt-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white"><option value="">-- Pilih Kelas --</option>';
                         cls.forEach(function(c){
                             const name = (c.name) ? c.name : (typeof c === 'string' ? c : '');
                             options += '<option value="'+(name)+'">'+(name)+'</option>';
