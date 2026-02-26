@@ -13,6 +13,7 @@ class Ticket extends Model
 
     protected $casts = [
         'checked_in_at' => 'datetime',
+        'children' => 'array',
     ];
 
     public function event()

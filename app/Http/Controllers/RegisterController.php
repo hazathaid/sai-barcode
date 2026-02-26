@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class RegisterController
 {
@@ -14,23 +15,63 @@ class RegisterController
      */
     public function store(Request $request, Event $event)
     {
+        // Log raw request payload for debugging client submissions
+        Log::info('Registration payload', $request->all());
+
+        // Remove any empty child entries (e.g. from added-but-empty JS groups)
+        $rawChildren = $request->input('children', []);
+        if (is_array($rawChildren)) {
+            $filtered = array_values(array_filter($rawChildren, function ($c) {
+                return isset($c['name']) && trim($c['name']) !== '';
+            }));
+            $request->merge(['children' => $filtered]);
+        }
+
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'parent_title' => ['nullable', 'in:Ayah,Bunda'],
+            'parent_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'required_without:phone', 'max:255'],
             'phone' => ['nullable', 'string', 'required_without:email', 'max:50'],
+            'children' => ['required', 'array', 'min:1'],
+            'children.*.name' => ['required', 'string', 'max:255'],
+            'children.*.class_room' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($event->status !== 'published') {
             abort(403, 'Event is not open for registration.');
         }
 
-        // Always create a new ticket record so each registration has its own ticket id
+        // Create a single ticket for the parent containing children as JSON and parent title
+        $children = array_map(function ($c) {
+            $class = isset($c['class_room']) ? trim((string) $c['class_room']) : null;
+            if ($class === '') {
+                $class = null;
+            }
+
+            return [
+                'name' => $c['name'] ?? null,
+                'class_room' => $class,
+            ];
+        }, $data['children']);
+
+        // also store legacy `kelas` column as the first child's class, if present
+        $legacyKelas = null;
+        foreach ($children as $c) {
+            if (! empty($c['class_room'])) {
+                $legacyKelas = $c['class_room'];
+                break;
+            }
+        }
+
         $ticket = Ticket::create([
             'event_id' => $event->id,
-            'name' => $data['name'],
+            'name' => $data['parent_name'],
+            'parent_name' => $data['parent_name'],
+            'parent_title' => $data['parent_title'] ?? null,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
-            'kelas' => $data['class_room'] ?? null,
+            'children' => $children,
+            'kelas' => $legacyKelas,
             'qr_token' => bin2hex(random_bytes(32)),
         ]);
 

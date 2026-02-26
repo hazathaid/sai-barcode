@@ -19,12 +19,14 @@ class TicketsExport implements FromCollection, WithHeadings
     {
         return [
             'no',
-            'event name',
-            'name',
-            'email',
-            'phone',
-            'sudah chekin atau belum',
-            'waktu checkin',
+            'Nama Event',
+            'Tipe Orang Tua',
+            'Nama Orang Tua',
+            'Email',
+            'Telepon',
+            'Anak-anak',
+            'Sudah Check-in atau Belum',
+            'Waktu Check-in',
         ];
     }
 
@@ -43,12 +45,23 @@ class TicketsExport implements FromCollection, WithHeadings
             $checkedLabel = $checked ? 'Sudah' : 'Belum';
             $checkedAt = $ticket->checked_in_at ? $ticket->checked_in_at->format('d-m-y H:i:s') : ($ticket->attendance?->checked_in_at?->format('d-m-y H:i:s') ?? null);
 
+            $children = '';
+            if (is_array($ticket->children ?? null)) {
+                $children = collect($ticket->children)->map(function ($c) {
+                    $name = $c['name'] ?? '';
+                    $cls = $c['class_room'] ?? '';
+                    return trim($name . ($cls ? ' (' . $cls . ')' : ''));
+                })->filter()->join('; ');
+            }
+
             return [
                 $index + 1,
                 $ticket->event?->name ?? null,
-                $ticket->name,
+                $ticket->parent_title,
+                $ticket->parent_name,
                 $ticket->email,
                 $ticket->phone,
+                $children,
                 $checkedLabel,
                 $checkedAt,
             ];

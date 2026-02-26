@@ -19,7 +19,8 @@ class AdminTicketController
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('qr_token', 'like', "%{$search}%");
+                  // also search inside children JSON for child name or class
+                  ->orWhere('children', 'like', "%{$search}%");
             });
         }
 
