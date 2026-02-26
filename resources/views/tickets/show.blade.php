@@ -16,7 +16,7 @@
             @endif
         </p>
 
-        <div class="mt-6">
+        <div class="mt-6 flex justify-center">
             {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(220)->generate(url('/t/'.$ticket->qr_token)) !!}
         </div>
 

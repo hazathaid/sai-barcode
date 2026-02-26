@@ -136,11 +136,21 @@
             let selectedId = cameraSelect?.value;
             let cameraId = selectedId || (cameras && cameras.length ? (cameras.find(c => /back|rear|environment/i.test(c.label))?.id || cameras[cameras.length-1].id) : null);
 
-            const cameraConfig = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: 'environment' };
+            // prefer deviceId when available, else request environment-facing camera using ideal constraint
+            const cameraConfig = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: { ideal: 'environment' } };
+
+            // adapt qrbox size to reader element (smaller on mobile helps detection)
+            const computeQrBox = () => {
+                try {
+                    const w = readerEl.clientWidth || Math.min(window.innerWidth - 40, 360);
+                    const size = Math.max(160, Math.min(360, Math.floor(w * 0.9)));
+                    return { width: size, height: size };
+                } catch(e) { return { width: 250, height: 250 }; }
+            };
 
             const qrOptions = {
-                fps: 10,
-                qrbox: { width: 480, height: 480 },
+                fps: 8,
+                qrbox: computeQrBox(),
                 experimentalFeatures: { useBarCodeDetectorIfSupported: true },
                 disableFlip: false
             };
