@@ -49,8 +49,22 @@
 
                 <form method="POST" action="{{ route('events.register', ['event' => $event->slug]) }}" class="mt-4 space-y-4">
                     @csrf
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
+                    <div>
+                        <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
+                        <div class="mt-2 flex items-center gap-6">
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                <input type="radio" name="registrant_type" value="parent" {{ old('registrant_type', 'parent') === 'parent' ? 'checked' : '' }}>
+                                <span>Orang Tua</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
+                                <span>Fasil</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="parent-fields" class="grid grid-cols-3 gap-3">
+                        <div id="parent-title-wrap">
                             <label for="parent_title" class="block text-sm font-medium text-gray-700">Ortu</label>
                             <select id="parent_title" name="parent_title" class="mt-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
                                 <option value="">-- Pilih --</option>
@@ -59,7 +73,7 @@
                             </select>
                         </div>
                         <div class="col-span-2">
-                            <label for="parent_name" class="block text-sm font-medium text-gray-700">Nama Orang Tua / Wali</label>
+                            <label id="parent-name-label" for="parent_name" class="block text-sm font-medium text-gray-700">Nama Orang Tua / Wali</label>
                             <input id="parent_name" name="parent_name" type="text" value="{{ old('parent_name') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200">
                         </div>
                     </div>
@@ -75,14 +89,14 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div id="children-section">
                         <p class="text-sm font-medium text-gray-700">Anak</p>
                         <div id="children-list" class="space-y-3 mt-2">
                             <div class="child-item bg-gray-50 p-3 rounded-lg border border-gray-200">
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-sm text-gray-600">Nama Anak</label>
-                                        <input name="children[][name]" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                        <input name="children[][name]" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
                                     </div>
                                     <div>
                                         <label class="block text-sm text-gray-600">Kelas</label>
@@ -124,6 +138,56 @@
         (function(){
             const childrenList = document.getElementById('children-list');
             const addBtn = document.getElementById('add-child');
+            const parentFields = document.getElementById('parent-fields');
+            const parentTitleWrap = document.getElementById('parent-title-wrap');
+            const parentTitle = document.getElementById('parent_title');
+            const parentNameLabel = document.getElementById('parent-name-label');
+            const childrenSection = document.getElementById('children-section');
+            const typeRadios = document.querySelectorAll('input[name="registrant_type"]');
+
+            function getRegistrantType() {
+                const selected = document.querySelector('input[name="registrant_type"]:checked');
+                return selected ? selected.value : 'parent';
+            }
+
+            function toggleParentChildFields() {
+                const isFasil = getRegistrantType() === 'fasil';
+
+                if (isFasil) {
+                    parentTitleWrap.classList.add('hidden');
+                    parentTitle.disabled = true;
+                    childrenSection.classList.add('hidden');
+                    addBtn.disabled = true;
+                    addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    setChildrenFieldsState(true);
+                    parentNameLabel.textContent = 'Name';
+                } else {
+                    parentTitleWrap.classList.remove('hidden');
+                    parentTitle.disabled = false;
+                    childrenSection.classList.remove('hidden');
+                    addBtn.disabled = false;
+                    addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    setChildrenFieldsState(false);
+                    parentNameLabel.textContent = 'Nama Orang Tua / Wali';
+                }
+            }
+
+            function setChildrenFieldsState(disabled) {
+                const items = childrenList.querySelectorAll('.child-item');
+                items.forEach(function(item){
+                    const nameInput = item.querySelector('input[name*="[name]"]');
+                    const classInput = item.querySelector('select[name*="[class_room]"] , input[name*="[class_room]"]');
+
+                    if (nameInput) {
+                        nameInput.disabled = disabled;
+                        nameInput.required = !disabled;
+                    }
+
+                    if (classInput) {
+                        classInput.disabled = disabled;
+                    }
+                });
+            }
 
             function makeChildNode() {
                 const wrapper = document.createElement('div');
@@ -132,7 +196,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm text-gray-600">Nama Anak</label>
-                            <input name="children[][name]" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <input name="children[][name]" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-sm text-gray-600">Kelas</label>
@@ -168,6 +232,7 @@
                 const node = makeChildNode();
                 childrenList.appendChild(node);
                 reindexChildren();
+                toggleParentChildFields();
             });
 
             // delegate remove
@@ -203,6 +268,12 @@
 
             // ensure initial inputs are indexed correctly
             reindexChildren();
+
+            typeRadios.forEach(function(radio){
+                radio.addEventListener('change', toggleParentChildFields);
+            });
+
+            toggleParentChildFields();
         })();
     </script>
 

@@ -18,6 +18,7 @@
                 <thead>
                     <tr class="text-sm text-gray-600">
                         <th class="p-3">#</th>
+                        <th class="p-3">Type</th>
                         <th class="p-3">Ortu</th>
                         <th class="p-3">Kontak</th>
                         <th class="p-3">Anak (Kelas)</th>
@@ -29,6 +30,13 @@
                     @foreach($tickets as $ticket)
                         <tr class="border-t">
                             <td class="p-3 align-top">{{ $loop->iteration + ($tickets->currentPage()-1)*$tickets->perPage() }}</td>
+                            <td class="p-3 align-top">
+                                @if(($ticket->registrant_type ?? 'parent') === 'fasil')
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-sky-50 text-sky-800">Fasil</span>
+                                @else
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-violet-50 text-violet-800">Orang Tua</span>
+                                @endif
+                            </td>
                             <td class="p-3 align-top">@if($ticket->parent_title){{ $ticket->parent_title }}. @endif {{ $ticket->parent_name ?? $ticket->name }}</td>
                             <td class="p-3 align-top">{{ $ticket->email }}<br>{{ $ticket->phone }}</td>
                             <td class="p-3 align-top">

@@ -19,8 +19,9 @@ class RegisterController
         Log::info('Registration payload', $request->all());
 
         // Remove any empty child entries (e.g. from added-but-empty JS groups)
+        $registrantType = $request->input('registrant_type', 'parent');
         $rawChildren = $request->input('children', []);
-        if (is_array($rawChildren)) {
+        if ($registrantType === 'parent' && is_array($rawChildren)) {
             $filtered = array_values(array_filter($rawChildren, function ($c) {
                 return isset($c['name']) && trim($c['name']) !== '';
             }));
@@ -28,12 +29,13 @@ class RegisterController
         }
 
         $data = $request->validate([
+            'registrant_type' => ['required', 'in:parent,fasil'],
             'parent_title' => ['nullable', 'in:Ayah,Bunda'],
             'parent_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'required_without:phone', 'max:255'],
             'phone' => ['nullable', 'string', 'required_without:email', 'max:50'],
-            'children' => ['required', 'array', 'min:1'],
-            'children.*.name' => ['required', 'string', 'max:255'],
+            'children' => ['exclude_unless:registrant_type,parent', 'required', 'array', 'min:1'],
+            'children.*.name' => ['exclude_unless:registrant_type,parent', 'required', 'string', 'max:255'],
             'children.*.class_room' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -42,17 +44,20 @@ class RegisterController
         }
 
         // Create a single ticket for the parent containing children as JSON and parent title
-        $children = array_map(function ($c) {
-            $class = isset($c['class_room']) ? trim((string) $c['class_room']) : null;
-            if ($class === '') {
-                $class = null;
-            }
+        $children = [];
+        if (($data['registrant_type'] ?? 'parent') === 'parent') {
+            $children = array_map(function ($c) {
+                $class = isset($c['class_room']) ? trim((string) $c['class_room']) : null;
+                if ($class === '') {
+                    $class = null;
+                }
 
-            return [
-                'name' => $c['name'] ?? null,
-                'class_room' => $class,
-            ];
-        }, $data['children']);
+                return [
+                    'name' => $c['name'] ?? null,
+                    'class_room' => $class,
+                ];
+            }, $data['children']);
+        }
 
         // also store legacy `kelas` column as the first child's class, if present
         $legacyKelas = null;
@@ -67,7 +72,8 @@ class RegisterController
             'event_id' => $event->id,
             'name' => $data['parent_name'],
             'parent_name' => $data['parent_name'],
-            'parent_title' => $data['parent_title'] ?? null,
+            'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
+            'registrant_type' => $data['registrant_type'] ?? 'parent',
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
             'children' => $children,

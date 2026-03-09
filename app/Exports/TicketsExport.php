@@ -20,6 +20,7 @@ class TicketsExport implements FromCollection, WithHeadings
         return [
             'no',
             'Nama Event',
+            'Type',
             'Tipe Orang Tua',
             'Nama Orang Tua',
             'Email',
@@ -57,6 +58,7 @@ class TicketsExport implements FromCollection, WithHeadings
             return [
                 $index + 1,
                 $ticket->event?->name ?? null,
+                ($ticket->registrant_type ?? 'parent') === 'fasil' ? 'Fasil' : 'Orang Tua',
                 $ticket->parent_title,
                 $ticket->parent_name,
                 $ticket->email,
