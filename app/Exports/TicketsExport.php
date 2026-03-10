@@ -28,6 +28,8 @@ class TicketsExport implements FromCollection, WithHeadings
             'Anak-anak',
             'Sudah Check-in atau Belum',
             'Waktu Check-in',
+            'Ambil Makan',
+            'Waktu Ambil Makan',
         ];
     }
 
@@ -66,6 +68,8 @@ class TicketsExport implements FromCollection, WithHeadings
                 $children,
                 $checkedLabel,
                 $checkedAt,
+                ($ticket->meal_taken ? 'Sudah' : 'Belum'),
+                $ticket->meal_taken_at ? $ticket->meal_taken_at->format('d-m-y H:i:s') : null,
             ];
         });
 
