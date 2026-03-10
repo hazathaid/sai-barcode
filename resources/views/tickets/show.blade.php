@@ -15,6 +15,17 @@
                 Belum check-in
             @endif
         </p>
+        <p class="text-gray-700"><strong>Ambil Makan:</strong>
+            @if($ticket->meal_taken)
+                @if($ticket->meal_taken_at)
+                    {{ $ticket->meal_taken_at->format('j M Y H:i') }}
+                @else
+                    Sudah mengambil makan
+                @endif
+            @else
+                Belum ambil makan
+            @endif
+        </p>
 
         <div class="mt-6 flex justify-center">
             {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(220)->generate(url('/t/'.$ticket->qr_token)) !!}
@@ -23,6 +34,10 @@
         <div class="mt-6">
             <button id="copyBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salin tautan tiket</button>
         </div>
+        <div class="mt-4 text-sm text-gray-500">
+            <a href="{{ route('events.show', ['event' => $ticket->event->slug]) }}" class="px-4 py-2 bg-red-500 text-white hover:underline rounded-2xl">
+                << Kembali ke halaman event
+            </a>
     </div>
 @endsection
 

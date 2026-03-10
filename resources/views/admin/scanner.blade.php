@@ -25,7 +25,15 @@
                 <button id="manualScanBtn" class="px-3 py-2 bg-indigo-600 text-white rounded-lg">Test</button>
             </div>
 
-            <div class="mt-3 flex items-center justify-center gap-2">
+            <div id="scanModeWrapper" class="mt-2 flex items-center justify-center gap-2 hidden">
+                <label for="scanMode" class="sr-only">Mode</label>
+                <select id="scanMode" class="px-3 py-2 border border-gray-200 rounded-lg w-3/4">
+                    <option value="checkin">Check-in</option>
+                    <option value="meal">Ambil Makan</option>
+                </select>
+            </div>
+
+            <div id="cameraSelectWrapper" class="mt-3 flex items-center justify-center gap-2 hidden">
                 <label for="cameraSelect" class="sr-only">Camera</label>
                 <select id="cameraSelect" class="px-3 py-2 border border-gray-200 rounded-lg w-3/4"></select>
             </div>
@@ -44,6 +52,10 @@
     const stopBtn = document.getElementById('stopBtn');
     const statusEl = document.getElementById('status');
     const readerEl = document.getElementById('reader');
+    const scanModeEl = document.getElementById('scanMode');
+    const scanModeWrapper = document.getElementById('scanModeWrapper');
+    const cameraSelectWrapper = document.getElementById('cameraSelectWrapper');
+    const manualTokenWrapper = document.querySelector('#manualToken')?.closest('div');
     let html5QrCode = null; let running = false; let cooldown = false;
 
     function loadScript(url){
@@ -82,7 +94,9 @@
         console.log('handleToken: sending token', token);
         let res;
         try {
-            res = await fetch('/api/admin/events/' + eventId + '/checkin', {
+            const mode = scanModeEl ? scanModeEl.value : 'checkin';
+            const path = mode === 'meal' ? 'meal' : 'checkin';
+            res = await fetch('/api/admin/events/' + eventId + '/' + path, {
                 method: 'POST', credentials: 'same-origin',
                 headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
                 body: JSON.stringify({ qr_token: token, device_info: navigator.userAgent })
@@ -103,7 +117,7 @@
             try { showToast('success', json.message); } catch(e) { console.log('Toast failed', e); }
             // stop scanner after successful check-in
             if (html5QrCode && running) {
-                html5QrCode.stop().then(()=>{ running=false; startBtn.disabled=false; stopBtn.disabled=true; }).catch(()=>{});
+                html5QrCode.stop().then(()=>{ running=false; startBtn.disabled=false; stopBtn.disabled=true; hideScanControls(); }).catch(()=>{});
             }
         }
         else if (json.status === 'ALREADY') {
@@ -160,7 +174,7 @@
                 (err)=>{ /* frequent parse-errors expected; keep minimal logging */ }
             );
 
-            running = true; startBtn.disabled = true; stopBtn.disabled = false;
+            running = true; startBtn.disabled = true; stopBtn.disabled = false; showScanControls();
 
             // react to camera selection changes while running
             cameraSelect?.addEventListener('change', async function(){
@@ -177,11 +191,23 @@
         } catch(err){ alert('Camera start failed: ' + err); }
     });
 
-    stopBtn.addEventListener('click', function(){ if (!running) return; html5QrCode.stop().then(()=>{ running=false; startBtn.disabled=false; stopBtn.disabled=true; }).catch(()=>{}); });
+    stopBtn.addEventListener('click', function(){ if (!running) return; html5QrCode.stop().then(()=>{ running=false; startBtn.disabled=false; stopBtn.disabled=true; hideScanControls(); }).catch(()=>{}); });
 
     document.getElementById('manualScanBtn').addEventListener('click', function(){
         const v = document.getElementById('manualToken').value.trim(); if (!v) return; handleToken(v);
     });
+
+    function showScanControls(){
+        scanModeWrapper?.classList.remove('hidden');
+        cameraSelectWrapper?.classList.remove('hidden');
+        if (manualTokenWrapper) manualTokenWrapper.classList.remove('hidden');
+    }
+
+    function hideScanControls(){
+        scanModeWrapper?.classList.add('hidden');
+        cameraSelectWrapper?.classList.add('hidden');
+        if (manualTokenWrapper) manualTokenWrapper.classList.add('hidden');
+    }
 
     // Simple toast helper
     function showToast(type, message, timeout = 3500) {

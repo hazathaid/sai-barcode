@@ -51,6 +51,10 @@ Route::get('/admin/events/{event}/scanner', [AdminScannerController::class, 'sho
 Route::post('/api/admin/events/{event}/checkin', [\App\Http\Controllers\AdminCheckinController::class, 'checkin'])
     ->middleware('auth');
 
+// Meal pickup endpoint (ambil makan) — separate URL
+Route::post('/api/admin/events/{event}/meal', [\App\Http\Controllers\AdminMealController::class, 'takeMeal'])
+    ->middleware('auth');
+
 // Simple auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
