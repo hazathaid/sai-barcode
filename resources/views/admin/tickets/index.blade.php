@@ -14,7 +14,7 @@
 
     <x-admin.card>
         <div class="overflow-x-auto">
-            <table class="w-full text-left table-auto">
+            <table class="w-full text-left table-auto min-w-max">
                 <thead>
                     <tr class="text-sm text-gray-600">
                         <th class="p-3">#</th>
@@ -24,6 +24,8 @@
                         <th class="p-3">Anak (Kelas)</th>
                         <th class="p-3">Status</th>
                         <th class="p-3">Checked in at</th>
+                        <th class="p-3">Ambil Makan</th>
+                        <th class="p-3">Waktu Ambil Makan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,12 +54,20 @@
                             </td>
                             <td class="p-3 align-top">
                                 @if($ticket->attendance)
-                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-amber-50 text-amber-800">Already</span>
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-amber-50 text-amber-800">Sudah</span>
                                 @else
-                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-emerald-50 text-emerald-800">Not checked-in</span>
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-emerald-50 text-emerald-800">Belum</span>
                                 @endif
                             </td>
                             <td class="p-3 align-top">{{ $ticket->attendance ? $ticket->attendance->checked_in_at->format('j M Y H:i') : '—' }}</td>
+                            <td class="p-3 align-top">
+                                @if($ticket->meal_taken)
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-emerald-50 text-emerald-800">Sudah</span>
+                                @else
+                                    <span class="inline-block px-2 py-1 rounded-lg text-sm bg-rose-50 text-rose-800">Belum</span>
+                                @endif
+                            </td>
+                            <td class="p-3 align-top">{{ $ticket->meal_taken_at ? $ticket->meal_taken_at->format('j M Y H:i') : '—' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
