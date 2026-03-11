@@ -24,7 +24,10 @@ class AdminTicketController
             });
         }
 
-        $tickets = $query->paginate(25)->withQueryString();
+        $perPage = (int) $request->query('per_page', 25);
+        $perPage = in_array($perPage, [10,25,50,100]) ? $perPage : 25;
+
+        $tickets = $query->paginate($perPage)->withQueryString();
 
         return view('admin.tickets.index', compact('event','tickets'));
     }
