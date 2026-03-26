@@ -19,17 +19,17 @@
 
                 <p class="mt-3 text-gray-600">
                     <strong class="text-gray-800">Date:</strong>
-                    {{ $event->starts_at->format('j M Y H:i') }}
+                    {{ $event->starts_at->format('j M Y H.i') }}
                     @if($event->ends_at)
-                        - {{ $event->ends_at->format('j M Y H:i') }}
+                        - {{ $event->ends_at->format('j M Y H.i') }}
                     @endif
                 </p>
 
                 <p class="mt-2 text-gray-600"><strong class="text-gray-800">Location:</strong> {{ $event->location ?? '—' }}</p>
 
                 <div class="mt-4 text-gray-700">
-                    <p class="font-medium">Event Details</p>
-                    <p class="mt-2 text-sm text-gray-600">Register to reserve your seat. After registration you'll get a ticket with a QR code to be scanned at the entrance.</p>
+                    <p class="font-medium">Event Details : {{ $event->description }} </p>
+                    <p class="mt-2 text-sm text-gray-600">Silakan melakukan pendaftaran untuk mengamankan kursi Anda. Setelah pendaftaran, Anda akan menerima tiket dengan kode QR yang akan dipindai saat memasuki lokasi acara.</p>
                 </div>
             </div>
 
