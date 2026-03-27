@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto">
     <x-admin.card>
         <h3 class="text-lg font-semibold mb-4">Edit Event</h3>
-        <form method="POST" action="{{ route('admin.events.update', $event) }}">
+        <form method="POST" action="{{ route('admin.events.update', $event) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="grid gap-4">
@@ -42,6 +42,19 @@
                         <option value="draft" {{ $event->status === 'draft' ? 'selected' : '' }}>draft</option>
                         <option value="closed" {{ $event->status === 'closed' ? 'selected' : '' }}>closed</option>
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Image</label>
+                    @if($event->image)
+                        @php
+                            $imgUrl = filter_var($event->image, FILTER_VALIDATE_URL) ? $event->image : asset('storage/' . ltrim($event->image, '/'));
+                        @endphp
+                        <div class="mb-2">
+                            <img src="{{ $imgUrl }}" alt="{{ $event->name }}" class="w-48 h-32 object-cover rounded">
+                        </div>
+                    @endif
+                    <input type="file" name="image" accept="image/*" class="mt-1 block w-full">
                 </div>
 
                 <div class="flex justify-end">

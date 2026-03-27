@@ -17,6 +17,23 @@
             <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
                 <h1 class="text-2xl font-semibold text-gray-800">{{ $event->name }}</h1>
 
+                @php
+                    $imageUrl = null;
+                    if (!empty($event->image)) {
+                        if (filter_var($event->image, FILTER_VALIDATE_URL)) {
+                            $imageUrl = $event->image;
+                        } else {
+                            $imageUrl = asset('storage/' . ltrim($event->image, '/'));
+                        }
+                    }
+                @endphp
+
+                @if($imageUrl)
+                    <div class="mt-4">
+                        <img src="{{ $imageUrl }}" alt="{{ $event->name }}" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                    </div>
+                @endif
+
                 <p class="mt-3 text-gray-600">
                     <strong class="text-gray-800">Date:</strong>
                     {{ $event->starts_at->format('j M Y H.i') }}

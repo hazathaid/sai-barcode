@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto">
     <x-admin.card>
         <h3 class="text-lg font-semibold mb-4">New Event</h3>
-        <form method="POST" action="{{ route('admin.events.store') }}">
+        <form method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="grid gap-4">
                 <div>
@@ -41,6 +41,11 @@
                         <option value="draft">draft</option>
                         <option value="closed">closed</option>
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Image</label>
+                    <input type="file" name="image" accept="image/*" class="mt-1 block w-full">
                 </div>
 
                 <div class="flex justify-end">

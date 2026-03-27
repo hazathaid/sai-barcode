@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminEventController
 {
@@ -27,7 +28,13 @@ class AdminEventController
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('events', 'public');
+            $data['image'] = $path;
+        }
 
         Event::create($data);
 
@@ -48,7 +55,17 @@ class AdminEventController
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
+
+        if ($request->hasFile('image')) {
+            // delete old image if exists
+            if ($event->image) {
+                Storage::disk('public')->delete($event->image);
+            }
+            $path = $request->file('image')->store('events', 'public');
+            $data['image'] = $path;
+        }
 
         $event->update($data);
 
@@ -57,6 +74,9 @@ class AdminEventController
 
     public function destroy(Event $event)
     {
+        if ($event->image) {
+            Storage::disk('public')->delete($event->image);
+        }
         $event->delete();
         return redirect()->route('admin.events.index')->with('success','Event deleted');
     }
