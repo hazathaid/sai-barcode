@@ -22,7 +22,7 @@ class AdminMealController
 
         $token = trim($data['qr_token']);
 
-        $ticket = Ticket::with('attendance')->where('event_id', $event->id)->where('qr_token', $token)->first();
+        $ticket = $this->findTicketFromScanPayload($event, $token, ['attendance']);
 
         if (! $ticket) {
             return response()->json(['status' => 'INVALID', 'message' => 'QR tidak valid'], 404);
@@ -74,5 +74,52 @@ class AdminMealController
             'ticket' => ['name' => $ticket->name, 'email' => $ticket->email],
             'meal' => ['meal_taken_at' => $now->toDateTimeString()],
         ]);
+    }
+
+    /**
+     * Resolve ticket from scanner payload. Supports:
+     * - raw qr_token
+     * - /t/{token} URL
+     * - /barcode/{id} URL
+     * - legacy payload id|code
+     */
+    private function findTicketFromScanPayload(Event $event, string $rawPayload, array $relations = []): ?Ticket
+    {
+        $payload = trim($rawPayload);
+        $tokenCandidates = [$payload];
+        $idCandidate = ctype_digit($payload) ? (int) $payload : null;
+
+        if (preg_match('~(?:https?://[^/]+)?/t/([^/?#]+)~i', $payload, $match)) {
+            $tokenCandidates[] = trim($match[1]);
+        }
+
+        if (preg_match('~(?:https?://[^/]+)?/barcode/(\d+)~i', $payload, $match)) {
+            $idCandidate = (int) $match[1];
+        }
+
+        if (str_contains($payload, '|')) {
+            [$left] = explode('|', $payload, 2);
+            $left = trim($left);
+            if (ctype_digit($left)) {
+                $idCandidate = (int) $left;
+            }
+        }
+
+        $tokenCandidates = array_values(array_unique(array_filter($tokenCandidates, fn ($value) => $value !== '')));
+
+        $baseQuery = Ticket::with($relations)->where('event_id', $event->id);
+
+        if (! empty($tokenCandidates)) {
+            $ticket = (clone $baseQuery)->whereIn('qr_token', $tokenCandidates)->first();
+            if ($ticket) {
+                return $ticket;
+            }
+        }
+
+        if ($idCandidate !== null) {
+            return (clone $baseQuery)->where('id', $idCandidate)->first();
+        }
+
+        return null;
     }
 }

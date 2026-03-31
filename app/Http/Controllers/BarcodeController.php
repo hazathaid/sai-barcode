@@ -58,7 +58,9 @@ class BarcodeController extends Controller
                     'name' => $t->name ?? null,
                     'event' => $t->event_id ?? null,
                     'code' => $t->code ?? null,
-                    'barcode_url' => url('/barcode/'.$t->id)
+                    'barcode_url' => url('/barcode/'.$t->id),
+                    'ticket_url' => url('/t/'.$t->qr_token),
+                    'qr_token' => $t->qr_token,
                 ];
             });
             return response()->json(['matches' => $list]);
@@ -75,7 +77,8 @@ class BarcodeController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $payload = $ticket->id . '|' . ($ticket->code ?? $ticket->id);
+        // Keep barcode compatible with admin scanner by encoding the ticket URL.
+        $payload = url('/t/' . $ticket->qr_token);
 
         // Use SVG renderer backend from bacon-qr-code (no imagick required)
         $size = 300;
