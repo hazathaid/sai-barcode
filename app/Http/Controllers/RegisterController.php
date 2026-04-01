@@ -30,8 +30,7 @@ class RegisterController
         }
 
         $data = $request->validate([
-            'registrant_type' => ['required', 'in:parent,fasil'],
-            'payment_option' => ['required', 'in:internal,external'],
+            'registrant_type' => ['required', 'in:parent,fasil,external'],
             'parent_title' => ['nullable', 'in:Ayah,Bunda'],
             'parent_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'required_without:phone', 'max:255'],
@@ -39,7 +38,7 @@ class RegisterController
             'children' => ['exclude_unless:registrant_type,parent', 'required', 'array', 'min:1'],
             'children.*.name' => ['exclude_unless:registrant_type,parent', 'required', 'string', 'max:255'],
             'children.*.class_room' => ['nullable', 'string', 'max:255'],
-            'bukti_bayar' => ['required_if:payment_option,external', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'bukti_bayar' => ['required_if:registrant_type,external', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         if ($event->status !== 'published') {
@@ -71,9 +70,9 @@ class RegisterController
             }
         }
 
-        // Handle bukti bayar (proof of payment) upload for external payment option
+        // Handle bukti bayar (proof of payment) upload for external registrant type
         $buktiBayarPath = null;
-        if ($data['payment_option'] === 'external' && $request->hasFile('bukti_bayar')) {
+        if ($data['registrant_type'] === 'external' && $request->hasFile('bukti_bayar')) {
             $buktiBayarPath = $request->file('bukti_bayar')->store('bukti_bayar', 'public');
         }
 
@@ -81,9 +80,8 @@ class RegisterController
             'event_id' => $event->id,
             'name' => $data['parent_name'],
             'parent_name' => $data['parent_name'],
-            'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
-            'registrant_type' => $data['registrant_type'] ?? 'parent',
-            'payment_option' => $data['payment_option'] ?? null,
+            'parent_title' => $data['registrant_type'] === 'parent' ? ($data['parent_title'] ?? null) : null,
+            'registrant_type' => $data['registrant_type'],
             'bukti_bayar' => $buktiBayarPath,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,

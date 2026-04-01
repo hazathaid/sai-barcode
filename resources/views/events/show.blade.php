@@ -77,18 +77,8 @@
                                 <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
                                 <span>Fasil</span>
                             </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <p class="block text-sm font-medium text-gray-700">Opsi Pembayaran</p>
-                        <div class="mt-2 flex items-center gap-6">
                             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                <input type="radio" name="payment_option" value="internal" {{ old('payment_option', 'internal') === 'internal' ? 'checked' : '' }}>
-                                <span>Internal</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                <input type="radio" name="payment_option" value="external" {{ old('payment_option') === 'external' ? 'checked' : '' }}>
+                                <input type="radio" name="registrant_type" value="external" {{ old('registrant_type') === 'external' ? 'checked' : '' }}>
                                 <span>External</span>
                             </label>
                         </div>
@@ -186,14 +176,16 @@
             const childrenSection = document.getElementById('children-section');
             const typeRadios = document.querySelectorAll('input[name="registrant_type"]');
 
-            // Payment option toggle
-            const paymentRadios = document.querySelectorAll('input[name="payment_option"]');
             const buktiSection = document.getElementById('bukti-bayar-section');
             const buktiInput = document.getElementById('bukti_bayar');
 
+            function getRegistrantType() {
+                const selected = document.querySelector('input[name="registrant_type"]:checked');
+                return selected ? selected.value : 'parent';
+            }
+
             function toggleBuktiBayar() {
-                const selected = document.querySelector('input[name="payment_option"]:checked');
-                const isExternal = selected && selected.value === 'external';
+                const isExternal = getRegistrantType() === 'external';
                 if (isExternal) {
                     buktiSection.classList.remove('hidden');
                     buktiInput.required = true;
@@ -204,29 +196,18 @@
                 }
             }
 
-            paymentRadios.forEach(function(radio) {
-                radio.addEventListener('change', toggleBuktiBayar);
-            });
-
-            // Run on load to restore state after validation failure
-            toggleBuktiBayar();
-
-            function getRegistrantType() {
-                const selected = document.querySelector('input[name="registrant_type"]:checked');
-                return selected ? selected.value : 'parent';
-            }
-
             function toggleParentChildFields() {
-                const isFasil = getRegistrantType() === 'fasil';
+                const type = getRegistrantType();
+                const hideParentChildren = type === 'fasil' || type === 'external';
 
-                if (isFasil) {
+                if (hideParentChildren) {
                     parentTitleWrap.classList.add('hidden');
                     parentTitle.disabled = true;
                     childrenSection.classList.add('hidden');
                     addBtn.disabled = true;
                     addBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     setChildrenFieldsState(true);
-                    parentNameLabel.textContent = 'Name';
+                    parentNameLabel.textContent = 'Nama';
                 } else {
                     parentTitleWrap.classList.remove('hidden');
                     parentTitle.disabled = false;
@@ -236,6 +217,8 @@
                     setChildrenFieldsState(false);
                     parentNameLabel.textContent = 'Nama Orang Tua / Wali';
                 }
+
+                toggleBuktiBayar();
             }
 
             function setChildrenFieldsState(disabled) {
