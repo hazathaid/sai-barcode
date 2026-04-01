@@ -38,7 +38,7 @@
                     <strong class="text-gray-800">Date:</strong>
                     {{ $event->starts_at->format('j M Y H.i') }}
                     @if($event->ends_at)
-                        - {{ $event->ends_at->format('j M Y H.i') }}
+                        - {{ $event->ends_at->format(' H.i') }}
                     @endif
                 </p>
 
@@ -46,7 +46,7 @@
 
                 <div class="mt-4 text-gray-700">
                     <p class="font-medium">Event Details : {{ $event->description }} </p>
-                    <p class="mt-2 text-sm text-gray-600">Silakan melakukan pendaftaran untuk mengamankan kursi Anda. Setelah pendaftaran, Anda akan menerima tiket dengan kode QR yang akan dipindai saat memasuki lokasi acara.</p>
+                    <p class="mt-2 text-sm text-gray-600">Silakan melakukan pendaftaran untuk mendapatkan barcode. Simpan barcode anda dan tunjukkan saat registrasi pada saat acara.</p>
                 </div>
             </div>
 
