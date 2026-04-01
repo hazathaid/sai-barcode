@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RegisterController
 {
@@ -30,6 +31,7 @@ class RegisterController
 
         $data = $request->validate([
             'registrant_type' => ['required', 'in:parent,fasil'],
+            'payment_option' => ['required', 'in:internal,external'],
             'parent_title' => ['nullable', 'in:Ayah,Bunda'],
             'parent_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'required_without:phone', 'max:255'],
@@ -37,6 +39,7 @@ class RegisterController
             'children' => ['exclude_unless:registrant_type,parent', 'required', 'array', 'min:1'],
             'children.*.name' => ['exclude_unless:registrant_type,parent', 'required', 'string', 'max:255'],
             'children.*.class_room' => ['nullable', 'string', 'max:255'],
+            'bukti_bayar' => ['required_if:payment_option,external', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         if ($event->status !== 'published') {
@@ -68,12 +71,20 @@ class RegisterController
             }
         }
 
+        // Handle bukti bayar (proof of payment) upload for external payment option
+        $buktiBayarPath = null;
+        if ($data['payment_option'] === 'external' && $request->hasFile('bukti_bayar')) {
+            $buktiBayarPath = $request->file('bukti_bayar')->store('bukti_bayar', 'public');
+        }
+
         $ticket = Ticket::create([
             'event_id' => $event->id,
             'name' => $data['parent_name'],
             'parent_name' => $data['parent_name'],
             'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
             'registrant_type' => $data['registrant_type'] ?? 'parent',
+            'payment_option' => $data['payment_option'] ?? null,
+            'bukti_bayar' => $buktiBayarPath,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
             'children' => $children,
