@@ -64,7 +64,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('events.register', ['event' => $event->slug]) }}" class="mt-4 space-y-4">
+                <form method="POST" action="{{ route('events.register', ['event' => $event->slug]) }}" enctype="multipart/form-data" class="mt-4 space-y-4">
                     @csrf
                     <div>
                         <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
@@ -77,7 +77,21 @@
                                 <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
                                 <span>Fasil</span>
                             </label>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                <input type="radio" name="registrant_type" value="external" {{ old('registrant_type') === 'external' ? 'checked' : '' }}>
+                                <span>External</span>
+                            </label>
                         </div>
+                    </div>
+
+                    <div id="bukti-bayar-section" class="hidden">
+                        <label for="bukti_bayar" class="block text-sm font-medium text-gray-700">Bukti Bayar <span class="text-red-500">*</span></label>
+                        <input id="bukti_bayar" name="bukti_bayar" type="file" accept="image/jpeg,image/png,image/webp"
+                            class="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                        <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG, WEBP. Maks. 2 MB.</p>
+                        @error('bukti_bayar')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div id="parent-fields" class="grid grid-cols-3 gap-3">
@@ -162,22 +176,38 @@
             const childrenSection = document.getElementById('children-section');
             const typeRadios = document.querySelectorAll('input[name="registrant_type"]');
 
+            const buktiSection = document.getElementById('bukti-bayar-section');
+            const buktiInput = document.getElementById('bukti_bayar');
+
             function getRegistrantType() {
                 const selected = document.querySelector('input[name="registrant_type"]:checked');
                 return selected ? selected.value : 'parent';
             }
 
-            function toggleParentChildFields() {
-                const isFasil = getRegistrantType() === 'fasil';
+            function toggleBuktiBayar() {
+                const isExternal = getRegistrantType() === 'external';
+                if (isExternal) {
+                    buktiSection.classList.remove('hidden');
+                    buktiInput.required = true;
+                } else {
+                    buktiSection.classList.add('hidden');
+                    buktiInput.required = false;
+                    buktiInput.value = '';
+                }
+            }
 
-                if (isFasil) {
+            function toggleParentChildFields() {
+                const type = getRegistrantType();
+                const hideParentChildren = type === 'fasil' || type === 'external';
+
+                if (hideParentChildren) {
                     parentTitleWrap.classList.add('hidden');
                     parentTitle.disabled = true;
                     childrenSection.classList.add('hidden');
                     addBtn.disabled = true;
                     addBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     setChildrenFieldsState(true);
-                    parentNameLabel.textContent = 'Name';
+                    parentNameLabel.textContent = 'Nama';
                 } else {
                     parentTitleWrap.classList.remove('hidden');
                     parentTitle.disabled = false;
@@ -187,6 +217,8 @@
                     setChildrenFieldsState(false);
                     parentNameLabel.textContent = 'Nama Orang Tua / Wali';
                 }
+
+                toggleBuktiBayar();
             }
 
             function setChildrenFieldsState(disabled) {
