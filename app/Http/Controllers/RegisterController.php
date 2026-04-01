@@ -7,11 +7,8 @@ use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-<<<<<<< fix/phone-only-registration
 use Illuminate\Database\QueryException;
-=======
 use Illuminate\Support\Facades\Storage;
->>>>>>> main
 
 class RegisterController
 {
@@ -102,15 +99,19 @@ class RegisterController
                 break;
             }
         }
-
-<<<<<<< fix/phone-only-registration
         try {
+            // Handle bukti bayar (proof of payment) upload for external registrant type
+            $buktiBayarPath = null;
+            if ($data['registrant_type'] === 'external' && $request->hasFile('bukti_bayar')) {
+                $buktiBayarPath = $request->file('bukti_bayar')->store('bukti_bayar', 'public');
+            }
             $ticket = Ticket::create([
                 'event_id' => $event->id,
                 'name' => $data['parent_name'],
                 'parent_name' => $data['parent_name'],
                 'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
                 'registrant_type' => $data['registrant_type'] ?? 'parent',
+                'bukti_bayar' => $buktiBayarPath,
                 'email' => $email !== '' ? $email : null,
                 'phone' => $phone !== '' ? $phone : null,
                 'children' => $children,
@@ -146,28 +147,6 @@ class RegisterController
                 ->withInput()
                 ->withErrors($errors);
         }
-=======
-        // Handle bukti bayar (proof of payment) upload for external registrant type
-        $buktiBayarPath = null;
-        if ($data['registrant_type'] === 'external' && $request->hasFile('bukti_bayar')) {
-            $buktiBayarPath = $request->file('bukti_bayar')->store('bukti_bayar', 'public');
-        }
-
-        $ticket = Ticket::create([
-            'event_id' => $event->id,
-            'name' => $data['parent_name'],
-            'parent_name' => $data['parent_name'],
-            'parent_title' => $data['registrant_type'] === 'parent' ? ($data['parent_title'] ?? null) : null,
-            'registrant_type' => $data['registrant_type'],
-            'bukti_bayar' => $buktiBayarPath,
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'children' => $children,
-            'kelas' => $legacyKelas,
-            'qr_token' => bin2hex(random_bytes(32)),
-        ]);
->>>>>>> main
-
         // TODO: dispatch email job to send ticket/QR to attendee
 
         return redirect()->route('tickets.show', ['token' => $ticket->qr_token]);
