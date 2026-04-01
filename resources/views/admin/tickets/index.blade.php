@@ -33,6 +33,7 @@
                     <tr class="text-sm text-gray-600">
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">#</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Type</th>
+                        <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Bukti Bayar</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Ortu</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Kontak</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Anak (Kelas)</th>
@@ -50,8 +51,17 @@
                             <td class="p-3 align-top">
                                 @if(($ticket->registrant_type ?? 'parent') === 'fasil')
                                     <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-sky-100 text-sky-800">Fasil</span>
+                                @elseif(($ticket->registrant_type ?? 'parent') === 'external')
+                                    <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-orange-100 text-orange-800">External</span>
                                 @else
                                     <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-violet-100 text-violet-800">Orang Tua</span>
+                                @endif
+                            </td>
+                            <td class="p-3 align-top text-sm">
+                                @if(($ticket->registrant_type ?? 'parent') === 'external' && $ticket->bukti_bayar)
+                                    <a href="{{ asset('storage/' . $ticket->bukti_bayar) }}" target="_blank" class="text-indigo-600 hover:underline">Lihat</a>
+                                @else
+                                    —
                                 @endif
                             </td>
                             <td class="p-3 align-top">@if($ticket->parent_title){{ $ticket->parent_title }}. @endif {{ $ticket->parent_name ?? $ticket->name }}</td>

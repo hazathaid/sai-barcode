@@ -26,6 +26,7 @@ class TicketsExport implements FromCollection, WithHeadings
             'Email',
             'Telepon',
             'Anak-anak',
+            'Bukti Bayar',
             'Sudah Check-in atau Belum',
             'Waktu Check-in',
             'Ambil Makan',
@@ -57,15 +58,24 @@ class TicketsExport implements FromCollection, WithHeadings
                 })->filter()->join('; ');
             }
 
+            // Determine registrant type label
+            $typeLabel = 'Orang Tua';
+            if (($ticket->registrant_type ?? 'parent') === 'fasil') {
+                $typeLabel = 'Fasil';
+            } elseif (($ticket->registrant_type ?? 'parent') === 'external') {
+                $typeLabel = 'External';
+            }
+
             return [
                 $index + 1,
                 $ticket->event?->name ?? null,
-                ($ticket->registrant_type ?? 'parent') === 'fasil' ? 'Fasil' : 'Orang Tua',
+                $typeLabel,
                 $ticket->parent_title,
                 $ticket->parent_name,
                 $ticket->email,
                 $ticket->phone,
                 $children,
+                $ticket->bukti_bayar ? asset('storage/' . $ticket->bukti_bayar) : null,
                 $checkedLabel,
                 $checkedAt,
                 ($ticket->meal_taken ? 'Sudah' : 'Belum'),

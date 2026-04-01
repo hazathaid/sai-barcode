@@ -36,6 +36,38 @@
         </x-admin.card>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <x-admin.card>
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-sm text-gray-500">Orang Tua</div>
+                    <div class="mt-2 text-2xl font-semibold">{{ $parentCount ?? 0 }}</div>
+                </div>
+                <div class="text-violet-600 text-3xl">👨‍👩‍👧</div>
+            </div>
+        </x-admin.card>
+
+        <x-admin.card>
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-sm text-gray-500">Fasil</div>
+                    <div class="mt-2 text-2xl font-semibold">{{ $facilCount ?? 0 }}</div>
+                </div>
+                <div class="text-sky-600 text-3xl">🧑‍🏫</div>
+            </div>
+        </x-admin.card>
+
+        <x-admin.card>
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-sm text-gray-500">External</div>
+                    <div class="mt-2 text-2xl font-semibold">{{ $externalCount ?? 0 }}</div>
+                </div>
+                <div class="text-orange-600 text-3xl">🌐</div>
+            </div>
+        </x-admin.card>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <x-admin.card class="lg:col-span-2">
             <h3 class="text-lg font-semibold mb-2">Recent registrations</h3>

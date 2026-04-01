@@ -23,6 +23,16 @@ class AdminDashboardController
             ->limit(5)
             ->get();
 
-        return view('admin.dashboard', compact('events', 'totalRegistrations', 'checkedIn', 'recentRegistrations'));
+        // Breakdown by registrant type
+        $byType = Ticket::selectRaw('registrant_type, count(*) as total')
+            ->groupBy('registrant_type')
+            ->get()
+            ->keyBy('registrant_type');
+
+        $parentCount = $byType->get('parent')?->total ?? 0;
+        $facilCount = $byType->get('fasil')?->total ?? 0;
+        $externalCount = $byType->get('external')?->total ?? 0;
+
+        return view('admin.dashboard', compact('events', 'totalRegistrations', 'checkedIn', 'recentRegistrations', 'parentCount', 'facilCount', 'externalCount'));
     }
 }
