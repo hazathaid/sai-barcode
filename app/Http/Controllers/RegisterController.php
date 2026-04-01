@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 
 class RegisterController
 {
@@ -43,6 +44,35 @@ class RegisterController
             abort(403, 'Event is not open for registration.');
         }
 
+        // --- NEW: reject duplicates per event (email/phone) ---
+        $email = isset($data['email']) ? trim((string) $data['email']) : '';
+        $phone = isset($data['phone']) ? trim((string) $data['phone']) : '';
+
+        if ($email !== '') {
+            $existsByEmail = Ticket::where('event_id', $event->id)
+                ->where('email', $email)
+                ->exists();
+
+            if ($existsByEmail) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['email' => 'Email sudah terdaftar untuk event ini.']);
+            }
+        }
+
+        if ($phone !== '') {
+            $existsByPhone = Ticket::where('event_id', $event->id)
+                ->where('phone', $phone)
+                ->exists();
+
+            if ($existsByPhone) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['phone' => 'Nomor telepon sudah terdaftar untuk event ini.']);
+            }
+        }
+        // --- END NEW ---
+
         // Create a single ticket for the parent containing children as JSON and parent title
         $children = [];
         if (($data['registrant_type'] ?? 'parent') === 'parent') {
@@ -68,18 +98,35 @@ class RegisterController
             }
         }
 
-        $ticket = Ticket::create([
-            'event_id' => $event->id,
-            'name' => $data['parent_name'],
-            'parent_name' => $data['parent_name'],
-            'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
-            'registrant_type' => $data['registrant_type'] ?? 'parent',
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'children' => $children,
-            'kelas' => $legacyKelas,
-            'qr_token' => bin2hex(random_bytes(32)),
-        ]);
+        try {
+            $ticket = Ticket::create([
+                'event_id' => $event->id,
+                'name' => $data['parent_name'],
+                'parent_name' => $data['parent_name'],
+                'parent_title' => ($data['registrant_type'] ?? 'parent') === 'fasil' ? null : ($data['parent_title'] ?? null),
+                'registrant_type' => $data['registrant_type'] ?? 'parent',
+                'email' => $email !== '' ? $email : null,
+                'phone' => $phone !== '' ? $phone : null,
+                'children' => $children,
+                'kelas' => $legacyKelas,
+                'qr_token' => bin2hex(random_bytes(32)),
+            ]);
+        } catch (QueryException $e) {
+            // Prevent raw 500s for unexpected DB issues
+            Log::error('Ticket create failed', [
+                'event_id' => $event->id,
+                'email' => $email,
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Pendaftaran gagal. Silakan coba lagi atau gunakan email/telepon lain.',
+                    'phone' => 'Pendaftaran gagal. Silakan coba lagi atau gunakan email/telepon lain.',
+                ]);
+        }
 
         // TODO: dispatch email job to send ticket/QR to attendee
 
