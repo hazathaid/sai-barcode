@@ -7,7 +7,12 @@
         <h1 class="text-2xl font-semibold">{{ $ticket->event->name }}</h1>
 
         <p class="mt-3 text-gray-700"><strong>Peserta:</strong> {{ $ticket->name }}</p>
-        <p class="text-gray-700"><strong>Email:</strong> {{ $ticket->email }}</p>
+        @if($ticket->email && $ticket->email !== '')
+            <p class="text-gray-700"><strong>Email:</strong> {{ $ticket->email }}</p>
+        @endif
+        @if($ticket->phone && $ticket->phone !== '')
+            <p class="text-gray-700"><strong>Telepon:</strong> {{ $ticket->phone }}</p>
+        @endif
         <p class="text-gray-700"><strong>Hadir:</strong>
             @if($ticket->checked_in_at)
                 {{ $ticket->checked_in_at->format('j M Y H:i') }}
