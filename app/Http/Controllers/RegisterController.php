@@ -126,12 +126,25 @@ class RegisterController
                 'error' => $e->getMessage(),
             ]);
 
+            $message = 'Pendaftaran gagal. Silakan coba lagi atau gunakan email/telepon lain.';
+            $errors = [];
+
+            if ($email !== '') {
+                $errors['email'] = $message;
+            }
+
+            if ($phone !== '') {
+                $errors['phone'] = $message;
+            }
+
+            if (empty($errors)) {
+                // Fall back to a form-level error if no identifier was provided
+                $errors['registration'] = $message;
+            }
+
             return back()
                 ->withInput()
-                ->withErrors([
-                    'email' => 'Pendaftaran gagal. Silakan coba lagi atau gunakan email/telepon lain.',
-                    'phone' => 'Pendaftaran gagal. Silakan coba lagi atau gunakan email/telepon lain.',
-                ]);
+                ->withErrors($errors);
         }
 =======
         // Handle bukti bayar (proof of payment) upload for external registrant type
