@@ -10,13 +10,19 @@
             <p class="text-sm text-gray-500 mt-1">Daftar peserta dan status kehadiran acara</p>
         </div>
 
-        <form method="GET" class="flex items-center gap-2">
+        <form method="GET" class="flex items-center gap-2 flex-wrap">
             <div class="relative">
                 <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
                 </svg>
                 <input type="search" name="q" value="{{ request('q') }}" placeholder="Search name or email" class="pl-9 pr-3 py-2 border rounded-lg" />
             </div>
+            <select name="class_id" class="border rounded-lg px-2 py-2 text-sm">
+                <option value="">Semua Kelas</option>
+                @foreach($classRooms as $classRoom)
+                    <option value="{{ $classRoom->id }}" {{ request('class_id') == $classRoom->id ? 'selected' : '' }}>{{ $classRoom->name }}</option>
+                @endforeach
+            </select>
             <select name="per_page" class="border rounded-lg px-2 py-2 text-sm">
                 @foreach([10,25,50,100] as $n)
                     <option value="{{ $n }}" {{ request('per_page',25) == $n ? 'selected' : '' }}>{{ $n }} / page</option>
