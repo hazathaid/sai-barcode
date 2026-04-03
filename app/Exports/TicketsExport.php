@@ -25,7 +25,8 @@ class TicketsExport implements FromCollection, WithHeadings
             'Nama Orang Tua',
             'Email',
             'Telepon',
-            'Anak-anak',
+            'Nama Anak',
+            'Kelas',
             'Bukti Bayar',
             'Sudah Check-in atau Belum',
             'Waktu Check-in',
@@ -49,13 +50,20 @@ class TicketsExport implements FromCollection, WithHeadings
             $checkedLabel = $checked ? 'Sudah' : 'Belum';
             $checkedAt = $ticket->checked_in_at ? $ticket->checked_in_at->format('d-m-y H:i:s') : ($ticket->attendance?->checked_in_at?->format('d-m-y H:i:s') ?? null);
 
-            $children = '';
+            $childrenNames = '';
+            $childrenClasses = '';
             if (is_array($ticket->children ?? null)) {
-                $children = collect($ticket->children)->map(function ($c) {
-                    $name = $c['name'] ?? '';
-                    $cls = $c['class_room'] ?? '';
-                    return trim($name . ($cls ? ' (' . $cls . ')' : ''));
-                })->filter()->join('; ');
+                $childrenCollection = collect($ticket->children);
+
+                $childrenNames = $childrenCollection
+                    ->map(fn ($child) => trim((string) ($child['name'] ?? '')))
+                    ->filter()
+                    ->join('; ');
+
+                $childrenClasses = $childrenCollection
+                    ->map(fn ($child) => trim((string) ($child['class_room'] ?? '')))
+                    ->filter()
+                    ->join('; ');
             }
 
             // Determine registrant type label
@@ -74,7 +82,8 @@ class TicketsExport implements FromCollection, WithHeadings
                 $ticket->parent_name,
                 $ticket->email,
                 $ticket->phone,
-                $children,
+                $childrenNames,
+                $childrenClasses,
                 $ticket->bukti_bayar ? asset('storage/' . $ticket->bukti_bayar) : null,
                 $checkedLabel,
                 $checkedAt,
