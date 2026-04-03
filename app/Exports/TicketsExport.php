@@ -3,12 +3,17 @@
 namespace App\Exports;
 
 use App\Models\Ticket;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class TicketsExport implements FromCollection, WithHeadings
 {
     protected $eventId;
+
+    protected ?Collection $tickets = null;
+
+    protected ?int $maxChildrenCount = null;
 
     public function __construct($eventId = null)
     {
@@ -17,7 +22,7 @@ class TicketsExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return [
+        $headings = [
             'no',
             'Nama Event',
             'Type',
@@ -25,45 +30,39 @@ class TicketsExport implements FromCollection, WithHeadings
             'Nama Orang Tua',
             'Email',
             'Telepon',
-            'Nama Anak',
-            'Kelas',
             'Bukti Bayar',
             'Sudah Check-in atau Belum',
             'Waktu Check-in',
             'Ambil Makan',
             'Waktu Ambil Makan',
         ];
+
+        $childHeadings = [];
+        for ($index = 1; $index <= $this->getMaxChildrenCount(); $index++) {
+            $childHeadings[] = 'Anak ' . $index;
+            $childHeadings[] = 'Kelas Anak ' . $index;
+        }
+
+        array_splice($headings, 7, 0, $childHeadings);
+
+        return $headings;
     }
 
     public function collection()
     {
-        $query = Ticket::with('event', 'attendance')->orderBy('id');
-
-        if ($this->eventId) {
-            $query->where('event_id', $this->eventId);
-        }
-
-        $tickets = $query->get();
+        $tickets = $this->getTickets();
 
         $rows = $tickets->map(function (Ticket $ticket, $index) {
             $checked = $ticket->checked_in_at || ($ticket->attendance?->checked_in_at ?? null);
             $checkedLabel = $checked ? 'Sudah' : 'Belum';
             $checkedAt = $ticket->checked_in_at ? $ticket->checked_in_at->format('d-m-y H:i:s') : ($ticket->attendance?->checked_in_at?->format('d-m-y H:i:s') ?? null);
 
-            $childrenNames = '';
-            $childrenClasses = '';
-            if (is_array($ticket->children ?? null)) {
-                $childrenCollection = collect($ticket->children);
-
-                $childrenNames = $childrenCollection
-                    ->map(fn ($child) => trim((string) ($child['name'] ?? '')))
-                    ->filter()
-                    ->join('; ');
-
-                $childrenClasses = $childrenCollection
-                    ->map(fn ($child) => trim((string) ($child['class_room'] ?? '')))
-                    ->filter()
-                    ->join('; ');
+            $children = collect(is_array($ticket->children ?? null) ? $ticket->children : [])->values();
+            $childColumns = [];
+            for ($childIndex = 0; $childIndex < $this->getMaxChildrenCount(); $childIndex++) {
+                $child = $children->get($childIndex, []);
+                $childColumns[] = trim((string) ($child['name'] ?? '')) ?: null;
+                $childColumns[] = trim((string) ($child['class_room'] ?? '')) ?: null;
             }
 
             // Determine registrant type label
@@ -74,7 +73,7 @@ class TicketsExport implements FromCollection, WithHeadings
                 $typeLabel = 'External';
             }
 
-            return [
+            $row = [
                 $index + 1,
                 $ticket->event?->name ?? null,
                 $typeLabel,
@@ -82,16 +81,48 @@ class TicketsExport implements FromCollection, WithHeadings
                 $ticket->parent_name,
                 $ticket->email,
                 $ticket->phone,
-                $childrenNames,
-                $childrenClasses,
                 $ticket->bukti_bayar ? asset('storage/' . $ticket->bukti_bayar) : null,
                 $checkedLabel,
                 $checkedAt,
                 ($ticket->meal_taken ? 'Sudah' : 'Belum'),
                 $ticket->meal_taken_at ? $ticket->meal_taken_at->format('d-m-y H:i:s') : null,
             ];
+
+            array_splice($row, 7, 0, $childColumns);
+
+            return $row;
         });
 
         return $rows->values();
+    }
+
+    protected function getTickets(): Collection
+    {
+        if ($this->tickets !== null) {
+            return $this->tickets;
+        }
+
+        $query = Ticket::with('event', 'attendance')->orderBy('id');
+
+        if ($this->eventId) {
+            $query->where('event_id', $this->eventId);
+        }
+
+        return $this->tickets = $query->get();
+    }
+
+    protected function getMaxChildrenCount(): int
+    {
+        if ($this->maxChildrenCount !== null) {
+            return $this->maxChildrenCount;
+        }
+
+        $maxChildrenCount = $this->getTickets()
+            ->map(function (Ticket $ticket) {
+                return is_array($ticket->children ?? null) ? count($ticket->children) : 0;
+            })
+            ->max() ?? 0;
+
+        return $this->maxChildrenCount = max(1, $maxChildrenCount);
     }
 }
