@@ -40,7 +40,6 @@ class TicketsExport implements FromCollection, WithHeadings
         $childHeadings = [];
         for ($index = 1; $index <= $this->getMaxChildrenCount(); $index++) {
             $childHeadings[] = 'Anak ' . $index;
-            $childHeadings[] = 'Kelas Anak ' . $index;
         }
 
         array_splice($headings, 7, 0, $childHeadings);
@@ -61,8 +60,18 @@ class TicketsExport implements FromCollection, WithHeadings
             $childColumns = [];
             for ($childIndex = 0; $childIndex < $this->getMaxChildrenCount(); $childIndex++) {
                 $child = $children->get($childIndex, []);
-                $childColumns[] = trim((string) ($child['name'] ?? '')) ?: null;
-                $childColumns[] = trim((string) ($child['class_room'] ?? '')) ?: null;
+                $childName = trim((string) ($child['name'] ?? ''));
+                $childClass = trim((string) ($child['class_room'] ?? ''));
+
+                if ($childName !== '' && $childClass !== '') {
+                    $childColumns[] = $childName . ' (' . $childClass . ')';
+                } elseif ($childName !== '') {
+                    $childColumns[] = $childName;
+                } elseif ($childClass !== '') {
+                    $childColumns[] = '(' . $childClass . ')';
+                } else {
+                    $childColumns[] = null;
+                }
             }
 
             // Determine registrant type label

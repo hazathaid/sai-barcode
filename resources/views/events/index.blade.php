@@ -18,7 +18,7 @@
         </header>
 
         @if($events->isEmpty())
-            <div class="bg-white p-6 rounded-lg shadow text-gray-600">No events found.</div>
+            <div class="bg-white p-6 rounded-lg shadow text-gray-600">Belum ada event yang tersedia saat ini.</div>
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($events as $event)

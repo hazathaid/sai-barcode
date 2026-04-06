@@ -12,7 +12,12 @@ class EventController
      */
     public function show(Event $event)
     {
+        if ($event->status !== 'published') {
+            return response()->view('events.closed', compact('event'));
+        }
+
         $classrooms = \App\Models\ClassRoom::all();
+
         return view('events.show', compact('event', 'classrooms'));
     }
 }

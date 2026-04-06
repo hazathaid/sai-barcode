@@ -8,7 +8,9 @@ use App\Http\Controllers\AdminScannerController;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
-    $events = App\Models\Event::orderByDesc('starts_at')->get();
+    $events = App\Models\Event::where('status', 'published')
+        ->orderByDesc('starts_at')
+        ->get();
     return view('events.index', compact('events'));
 });
 
