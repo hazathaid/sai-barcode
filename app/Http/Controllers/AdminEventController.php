@@ -28,6 +28,7 @@ class AdminEventController
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed',
+            'external_only' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
@@ -35,6 +36,9 @@ class AdminEventController
             $path = $request->file('image')->store('events', 'public');
             $data['image'] = $path;
         }
+
+        // ensure external_only is set (checkbox may be absent when unchecked)
+        $data['external_only'] = $request->has('external_only');
 
         Event::create($data);
 
@@ -55,6 +59,7 @@ class AdminEventController
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed',
+            'external_only' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
@@ -66,6 +71,9 @@ class AdminEventController
             $path = $request->file('image')->store('events', 'public');
             $data['image'] = $path;
         }
+
+        // ensure external_only is set (checkbox may be absent when unchecked)
+        $data['external_only'] = $request->has('external_only');
 
         $event->update($data);
 

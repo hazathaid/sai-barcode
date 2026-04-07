@@ -19,6 +19,7 @@
                         <th class="p-3">Starts At</th>
                         <th class="p-3">Location</th>
                         <th class="p-3">Status</th>
+                        <th class="p-3">External Only</th>
                         <th class="p-3">Actions</th>
                     </tr>
                 </thead>
@@ -30,6 +31,7 @@
                             <td class="p-3">{{ $event->starts_at->format('j M Y H:i') }}</td>
                             <td class="p-3">{{ $event->location ?? '—' }}</td>
                             <td class="p-3">{{ $event->status }}</td>
+                            <td class="p-3">{{ $event->external_only ? 'External' : 'All' }}</td>
                             <td class="p-3">
                                 <div class="flex gap-2">
                                     <a href="{{ route('admin.events.tickets', $event) }}" class="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700">Tickets</a>

@@ -45,6 +45,13 @@
                 </div>
 
                 <div>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="external_only" value="1" class="mr-2" {{ old('external_only', $event->external_only) ? 'checked' : '' }}>
+                        <span class="text-sm">Registrasi hanya untuk external (non-internal)</span>
+                    </label>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium">Image</label>
                     @if($event->image)
                         @php

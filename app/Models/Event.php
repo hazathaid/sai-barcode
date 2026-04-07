@@ -14,6 +14,7 @@ class Event extends Model
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'external_only' => 'boolean',
     ];
 
     public function category()

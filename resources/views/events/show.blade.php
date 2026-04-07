@@ -68,21 +68,27 @@
                     @csrf
                     <div>
                         @if($event->category_id == '1')
-                            <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
-                            <div class="mt-2 flex items-center gap-6">
-                                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                    <input type="radio" name="registrant_type" value="parent" {{ old('registrant_type', 'parent') === 'parent' ? 'checked' : '' }}>
-                                    <span>Orang Tua</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                    <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
-                                    <span>Fasil</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                    <input type="radio" name="registrant_type" value="external" {{ old('registrant_type') === 'external' ? 'checked' : '' }}>
-                                    <span>External</span>
-                                </label>
-                            </div>
+                            @if(!empty($event->external_only))
+                                <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
+                                <p class="mt-2 text-sm text-gray-600">Pendaftaran dibuka untuk peserta <strong>External</strong> saja.</p>
+                                <input type="hidden" name="registrant_type" value="external">
+                            @else
+                                <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
+                                <div class="mt-2 flex items-center gap-6">
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                        <input type="radio" name="registrant_type" value="parent" {{ old('registrant_type', 'parent') === 'parent' ? 'checked' : '' }}>
+                                        <span>Orang Tua</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                        <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
+                                        <span>Fasil</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                        <input type="radio" name="registrant_type" value="external" {{ old('registrant_type') === 'external' ? 'checked' : '' }}>
+                                        <span>External</span>
+                                    </label>
+                                </div>
+                            @endif
                         @else
                             <input type="hidden" name="registrant_type" value="parent">
                         @endif
@@ -186,13 +192,13 @@
             const parentTitle = document.getElementById('parent_title');
             const parentNameLabel = document.getElementById('parent-name-label');
             const childrenSection = document.getElementById('children-section');
-            const typeRadios = document.querySelectorAll('input[name="registrant_type"]');
+            const typeRadios = document.querySelectorAll('input[name="registrant_type"][type="radio"]');
 
             const buktiSection = document.getElementById('bukti-bayar-section');
             const buktiInput = document.getElementById('bukti_bayar');
 
             function getRegistrantType() {
-                const selected = document.querySelector('input[name="registrant_type"]:checked');
+                const selected = document.querySelector('input[name="registrant_type"]:checked') || document.querySelector('input[name="registrant_type"][type="hidden"]');
                 return selected ? selected.value : 'parent';
             }
 

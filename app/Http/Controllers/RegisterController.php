@@ -42,6 +42,16 @@ class RegisterController
             'bukti_bayar' => ['required_if:registrant_type,external', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        // If the event is configured to accept external registrants only,
+        // reject other registrant types early and show a friendly message.
+        if (!empty($event->external_only)) {
+            $submittedType = $request->input('registrant_type', 'parent');
+            if ($submittedType !== 'external') {
+                return back()
+                    ->withInput()
+                    ->withErrors(['registrant_type' => 'Pendaftaran untuk event ini hanya menerima peserta eksternal.']);
+            }
+        }
         if ($event->status !== 'published') {
             abort(403, 'Event is not open for registration.');
         }
