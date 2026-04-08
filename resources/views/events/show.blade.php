@@ -70,8 +70,16 @@
                         @if($event->category_id == '1')
                             @if(!empty($event->external_only))
                                 <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
-                                <p class="mt-2 text-sm text-gray-600">Pendaftaran dibuka untuk peserta <strong>External</strong> saja.</p>
-                                <input type="hidden" name="registrant_type" value="external">
+                                <div class="mt-2 flex items-center gap-6">
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                        <input type="radio" name="registrant_type" value="fasil" {{ old('registrant_type') === 'fasil' ? 'checked' : '' }}>
+                                        <span>Fasil</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                        <input type="radio" name="registrant_type" value="external" {{ old('registrant_type') === 'external' ? 'checked' : '' }}>
+                                        <span>External</span>
+                                    </label>
+                                </div>
                             @else
                                 <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
                                 <div class="mt-2 flex items-center gap-6">
