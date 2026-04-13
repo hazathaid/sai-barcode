@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <x-admin.card>
             <div class="flex items-center justify-between">
                 <div>
@@ -22,6 +22,16 @@
                     <div class="mt-2 text-2xl font-semibold">{{ $checkedIn ?? 42 }}</div>
                 </div>
                 <div class="text-emerald-600 text-3xl">✅</div>
+            </div>
+        </x-admin.card>
+
+        <x-admin.card>
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-sm text-gray-500">Meals taken</div>
+                    <div class="mt-2 text-2xl font-semibold">{{ $mealTaken ?? 0 }}</div>
+                </div>
+                <div class="text-amber-600 text-3xl">🍽️</div>
             </div>
         </x-admin.card>
 

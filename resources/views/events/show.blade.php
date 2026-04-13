@@ -102,11 +102,25 @@
                         @endif
                     </div>
 
-                    <div id="bukti-bayar-section" class="hidden">
+                    <div id="transfer-info-section" class="hidden mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-300 rounded">
+                        <p class="text-sm text-gray-800">Untuk pendaftar <strong>External</strong>, silakan transfer ke:</p>
+                        <div class="mt-2 flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-700 font-semibold">1427720148 <span class="text-xs text-gray-600">(BSI)</span></div>
+                                <div class="text-sm text-gray-700">a.n. Yayasan Islam Cendekia</div>
+                            </div>
+                            <button type="button" id="copy-account-btn" class="ml-3 inline-flex items-center px-3 py-1 bg-white border rounded text-sm text-indigo-600 hover:bg-indigo-50">Salin</button>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-600">Setelah transfer, unggah bukti transfer di kolom di bawah.</p>
+                    </div>
+
+                    <div id="bukti-bayar-section" class="hidden mt-4">
                         <label for="bukti_bayar" class="block text-sm font-medium text-gray-700">Bukti Bayar <span class="text-red-500">*</span></label>
-                        <input id="bukti_bayar" name="bukti_bayar" type="file" accept="image/jpeg,image/png,image/webp"
-                            class="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
-                        <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG, WEBP. Maks. 2 MB.</p>
+                        <div class="mt-1">
+                            <input id="bukti_bayar" name="bukti_bayar" type="file" accept="image/jpeg,image/png,image/webp"
+                                class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                            <p class="mt-2 text-xs text-gray-600">Maks. 2 MB. Format: JPG, PNG, WEBP.</p>
+                        </div>
                         @error('bukti_bayar')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -204,6 +218,8 @@
 
             const buktiSection = document.getElementById('bukti-bayar-section');
             const buktiInput = document.getElementById('bukti_bayar');
+            const transferInfoSection = document.getElementById('transfer-info-section');
+            const copyAccountBtn = document.getElementById('copy-account-btn');
 
             function getRegistrantType() {
                 const selected = document.querySelector('input[name="registrant_type"]:checked') || document.querySelector('input[name="registrant_type"][type="hidden"]');
@@ -213,13 +229,36 @@
             function toggleBuktiBayar() {
                 const isExternal = getRegistrantType() === 'external';
                 if (isExternal) {
+                    transferInfoSection.classList.remove('hidden');
                     buktiSection.classList.remove('hidden');
                     buktiInput.required = true;
                 } else {
+                    transferInfoSection.classList.add('hidden');
                     buktiSection.classList.add('hidden');
                     buktiInput.required = false;
-                    buktiInput.value = '';
+                    try { buktiInput.value = ''; } catch(e) {}
                 }
+            }
+
+            // copy account number to clipboard
+            if (copyAccountBtn) {
+                copyAccountBtn.addEventListener('click', function(){
+                    const acc = '1427720148';
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(acc).then(function(){
+                            copyAccountBtn.textContent = 'Tersalin';
+                            setTimeout(function(){ copyAccountBtn.textContent = 'Salin'; }, 2000);
+                        });
+                    } else {
+                        // fallback
+                        const ta = document.createElement('textarea');
+                        ta.value = acc;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try { document.execCommand('copy'); copyAccountBtn.textContent = 'Tersalin'; setTimeout(function(){ copyAccountBtn.textContent = 'Salin'; }, 2000); } catch(e) {}
+                        ta.remove();
+                    }
+                });
             }
 
             function toggleParentChildFields() {

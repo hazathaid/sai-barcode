@@ -18,6 +18,8 @@ class AdminDashboardController
             ->orWhereHas('attendance')
             ->count();
 
+        $mealTaken = Ticket::where('meal_taken', true)->count();
+
         $recentRegistrations = Ticket::with('event')
             ->orderByDesc('created_at')
             ->limit(5)
@@ -33,6 +35,6 @@ class AdminDashboardController
         $facilCount = $byType->get('fasil')?->total ?? 0;
         $externalCount = $byType->get('external')?->total ?? 0;
 
-        return view('admin.dashboard', compact('events', 'totalRegistrations', 'checkedIn', 'recentRegistrations', 'parentCount', 'facilCount', 'externalCount'));
+        return view('admin.dashboard', compact('events', 'totalRegistrations', 'checkedIn', 'mealTaken', 'recentRegistrations', 'parentCount', 'facilCount', 'externalCount'));
     }
 }

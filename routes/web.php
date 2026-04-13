@@ -66,6 +66,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 use App\Http\Controllers\BarcodeController;
 use Illuminate\Auth\Middleware\Authenticate;
 use App\Http\Controllers\TicketExportController;
+use App\Http\Controllers\ClassReportController;
 
 Route::get('/barcode', [BarcodeController::class, 'index'])
     ->withoutMiddleware([Authenticate::class])
@@ -79,4 +80,8 @@ Route::get('/barcode/{ticket}', [BarcodeController::class, 'show'])
 Route::get('/admin/reports/tickets', [TicketExportController::class, 'export'])
     ->middleware('auth')
     ->name('admin.reports.tickets');
+
+Route::get('/admin/reports/classes', [ClassReportController::class, 'index'])
+    ->middleware('auth')
+    ->name('admin.reports.classes');
 
