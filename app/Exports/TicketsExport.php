@@ -44,6 +44,9 @@ class TicketsExport implements FromCollection, WithHeadings
 
         array_splice($headings, 7, 0, $childHeadings);
 
+        // Add certificate download count column at the end
+        $headings[] = 'Jumlah Download Sertifikat';
+
         return $headings;
     }
 
@@ -98,6 +101,9 @@ class TicketsExport implements FromCollection, WithHeadings
             ];
 
             array_splice($row, 7, 0, $childColumns);
+
+            // append certificate download count
+            $row[] = $ticket->certificate_downloads ?? 0;
 
             return $row;
         });
