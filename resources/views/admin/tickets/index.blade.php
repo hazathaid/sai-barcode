@@ -40,7 +40,7 @@
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">#</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Type</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Bukti Bayar</th>
-                        <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Ortu</th>
+                        <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Nama</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Kontak</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Anak (Kelas)</th>
                         <th class="p-3 sticky top-0 bg-white/95 backdrop-blur z-10 text-xs uppercase tracking-wide">Status</th>
@@ -70,7 +70,7 @@
                                     —
                                 @endif
                             </td>
-                            <td class="p-3 align-top">@if($ticket->parent_title){{ $ticket->parent_title }}. @endif {{ $ticket->parent_name ?? $ticket->name }}</td>
+                            <td class="p-3 align-top">@if($ticket->name){{ $ticket->name }}. @endif </td>
                             <td class="p-3 align-top">{{ $ticket->email }}<br>{{ $ticket->phone }}</td>
                             <td class="p-3 align-top">
                                 @if(is_array($ticket->children))
