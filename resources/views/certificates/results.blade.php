@@ -13,13 +13,14 @@
     @else
         <div class="space-y-3">
             @foreach($tickets as $t)
-                <div class="p-3 border rounded flex items-center justify-between">
+                    <div class="p-4 border rounded-lg bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <div class="font-medium">{{ $t->name }}</div>
                         <div class="text-sm text-gray-600">{{ $t->email }} • {{ $t->phone }} • {{ $t->event->name }}</div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('certificate.download', $t) }}" class="px-3 py-2 bg-green-600 text-white rounded">Download</a>
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 sm:mt-0">
+                            <a href="{{ route('certificate.download', $t) }}" class="w-full sm:w-auto px-3 py-2 bg-green-600 text-white rounded text-center">Download</a>
                         <div class="text-sm text-gray-600">Downloaded: {{ $t->certificate_downloads ?? 0 }}</div>
                     </div>
                 </div>
