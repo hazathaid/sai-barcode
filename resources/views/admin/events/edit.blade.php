@@ -50,6 +50,7 @@
                         <option value="published" {{ $event->status === 'published' ? 'selected' : '' }}>published</option>
                         <option value="draft" {{ $event->status === 'draft' ? 'selected' : '' }}>draft</option>
                         <option value="closed" {{ $event->status === 'closed' ? 'selected' : '' }}>closed</option>
+                        <option value="finished" {{ $event->status === 'finished' ? 'selected' : '' }}>finished</option>
                     </select>
                 </div>
 

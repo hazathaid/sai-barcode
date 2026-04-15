@@ -36,6 +36,8 @@ Route::middleware('auth')->prefix('admin/events')->name('admin.events.')->group(
 // Admin event tickets list
 use App\Http\Controllers\AdminTicketController;
 Route::get('/admin/events/{event}/tickets', [AdminTicketController::class, 'index'])->middleware('auth')->name('admin.events.tickets');
+Route::get('/admin/events/{event}/tickets/{ticket}/edit', [AdminTicketController::class, 'edit'])->middleware('auth')->name('admin.events.tickets.edit');
+Route::put('/admin/events/{event}/tickets/{ticket}', [AdminTicketController::class, 'update'])->middleware('auth')->name('admin.events.tickets.update');
 
 // Public event pages and registration
 Route::get('/e/{event:slug}', [EventController::class, 'show'])->name('events.show');

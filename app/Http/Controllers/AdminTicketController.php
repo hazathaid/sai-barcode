@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassRoom;
 use App\Models\Event;
+use App\Models\Ticket;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 
 class AdminTicketController
@@ -41,5 +43,30 @@ class AdminTicketController
         $classRooms = ClassRoom::orderBy('name')->get();
 
         return view('admin.tickets.index', compact('event', 'tickets', 'classRooms'));
+    }
+
+    public function edit(Event $event, Ticket $ticket)
+    {
+        // ensure ticket belongs to event
+        if ($ticket->event_id !== $event->id) {
+            abort(404);
+        }
+
+        return view('admin.tickets.edit', compact('event', 'ticket'));
+    }
+
+    public function update(Request $request, Event $event, Ticket $ticket)
+    {
+        if ($ticket->event_id !== $event->id) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $ticket->update(['name' => $data['name']]);
+
+        return Redirect::route('admin.events.tickets', $event)->with('success', 'Ticket name updated');
     }
 }

@@ -5,7 +5,11 @@
     <h2 class="text-xl font-semibold mb-4">Hasil pencarian: "{{ $q }}"</h2>
 
     @if($tickets->isEmpty())
-        <div class="p-4 bg-yellow-50 rounded">Tidak ditemukan tiket untuk query tersebut.</div>
+        <div class="p-6 bg-white border border-red-200 rounded-lg shadow-sm">
+            <h3 class="text-lg font-semibold text-red-700 mb-2">Nomor Anda belum terdaftar sebagai penerima E‑Sertifikat</h3>
+            <p class="text-sm text-gray-700 mb-3">Mohon maaf — kami tidak menemukan data kehadiran peserta yang cocok dengan informasi yang Anda masukkan.</p>
+            <p class="text-sm text-gray-600">Info lebih lanjut, harap menghubungi panitia acara. Terima kasih.</p>
+        </div>
     @else
         <div class="space-y-3">
             @foreach($tickets as $t)

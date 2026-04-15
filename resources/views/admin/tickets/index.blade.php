@@ -102,6 +102,7 @@
                             <td class="p-3 align-top">
                                 <div class="flex items-center gap-2">
                                     <a href="{{ route('tickets.show', ['token' => $ticket->qr_token]) }}" class="text-sm text-indigo-600 hover:underline">Lihat</a>
+                                    <a href="{{ route('admin.events.tickets.edit', [$event, $ticket]) }}" class="text-sm text-gray-600 hover:underline">Edit</a>
                                 </div>
                             </td>
                         </tr>

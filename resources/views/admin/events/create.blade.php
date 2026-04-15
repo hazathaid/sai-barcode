@@ -40,6 +40,7 @@
                         <option value="published">published</option>
                         <option value="draft">draft</option>
                         <option value="closed">closed</option>
+                        <option value="finished">finished</option>
                     </select>
                 </div>
 
