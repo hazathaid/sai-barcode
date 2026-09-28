@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Tailwind CDN
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, views load Tailwind from the CDN instead of the compiled
+    | Vite assets. Exposed via config so it keeps working when the config is
+    | cached on production (env() returns null once config is cached).
+    |
+    */
+
+    'use_tailwind_cdn' => env('USE_TAILWIND_CDN', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

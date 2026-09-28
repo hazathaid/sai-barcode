@@ -4,15 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>@yield('title', config('app.name'))</title>
-    @if (env('USE_TAILWIND_CDN'))
+    @if (config('app.use_tailwind_cdn'))
         <script src="https://cdn.tailwindcss.com"></script>
     @else
-        @if (app()->environment('local'))
-            @vite(['resources/css/app.css','resources/js/app.js'])
-        @else
-            <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-            <script src="{{ asset('js/app.js') }}" defer></script>
-        @endif
+        @vite(['resources/css/app.css','resources/js/app.js'])
     @endif
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
