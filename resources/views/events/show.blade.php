@@ -77,8 +77,7 @@
                 <form method="POST" action="{{ route('events.register', ['event' => $event->slug]) }}" enctype="multipart/form-data" class="mt-4 space-y-4">
                     @csrf
                     <div>
-                        @if($event->category_id == '1')
-                            @if(!empty($event->external_only))
+                        @if(!empty($event->external_only))
                                 <p class="block text-sm font-medium text-gray-700">Tipe Pendaftar</p>
                                 <div class="mt-2 flex items-center gap-6">
                                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
@@ -106,9 +105,6 @@
                                         <span>External</span>
                                     </label>
                                 </div>
-                            @endif
-                        @else
-                            <input type="hidden" name="registrant_type" value="parent">
                         @endif
                     </div>
 
@@ -193,18 +189,14 @@
                                         @endif
                                     </div>
                                 </div>
-                                @if($event->category_id == '1')
-                                    <div class="mt-2 text-right">
-                                        <button type="button" class="remove-child inline-flex items-center px-2 py-1 text-sm text-red-600 hover:underline">Hapus</button>
-                                    </div>
-                                @endif
+                                <div class="mt-2 text-right">
+                                    <button type="button" class="remove-child inline-flex items-center px-2 py-1 text-sm text-red-600 hover:underline">Hapus</button>
+                                </div>
                             </div>
                         </div>
-                        @if($event->category_id == '1')
-                            <div class="mt-3">
-                                <button id="add-child" type="button" class="inline-flex items-center px-3 py-2 bg-white border rounded text-sm text-indigo-600 hover:bg-indigo-50">+ Tambah Anak</button>
-                            </div>
-                        @endif
+                        <div class="mt-3">
+                            <button id="add-child" type="button" class="inline-flex items-center px-3 py-2 bg-white border rounded text-sm text-indigo-600 hover:bg-indigo-50">+ Tambah Anak</button>
+                        </div>
                     </div>
 
                     <div>
@@ -279,16 +271,20 @@
                     parentTitleWrap.classList.add('hidden');
                     parentTitle.disabled = true;
                     childrenSection.classList.add('hidden');
-                    addBtn.disabled = true;
-                    addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    if (addBtn) {
+                        addBtn.disabled = true;
+                        addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                     setChildrenFieldsState(true);
                     parentNameLabel.textContent = 'Nama';
                 } else {
                     parentTitleWrap.classList.remove('hidden');
                     parentTitle.disabled = false;
                     childrenSection.classList.remove('hidden');
-                    addBtn.disabled = false;
-                    addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if (addBtn) {
+                        addBtn.disabled = false;
+                        addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                     setChildrenFieldsState(false);
                     parentNameLabel.textContent = 'Nama Orang Tua / Wali';
                 }
@@ -352,12 +348,14 @@
                 return '<input name="children[][class_room]" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">';
             }
 
-            addBtn.addEventListener('click', function(){
-                const node = makeChildNode();
-                childrenList.appendChild(node);
-                reindexChildren();
-                toggleParentChildFields();
-            });
+            if (addBtn) {
+                addBtn.addEventListener('click', function(){
+                    const node = makeChildNode();
+                    childrenList.appendChild(node);
+                    reindexChildren();
+                    toggleParentChildFields();
+                });
+            }
 
             // delegate remove
             childrenList.addEventListener('click', function(e){

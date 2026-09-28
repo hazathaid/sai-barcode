@@ -11,7 +11,16 @@ class AdminEventController
 {
     public function index()
     {
-        $events = Event::with('creator')->orderByDesc('starts_at')->paginate(20);
+        // Only show events created by this admin. Events with no owner yet
+        // (created before ownership) stay visible so someone can edit/claim them.
+        $events = Event::with('creator')
+            ->where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereNull('user_id');
+            })
+            ->orderByDesc('starts_at')
+            ->paginate(20);
+
         return view('admin.events.index', compact('events'));
     }
 
@@ -183,6 +192,11 @@ class AdminEventController
 
         // ensure external_only is set (checkbox may be absent when unchecked)
         $data['external_only'] = $request->has('external_only');
+
+        // If an event had no owner yet, editing it claims ownership for this admin.
+        if ($event->user_id === null) {
+            $data['user_id'] = $request->user()?->id;
+        }
 
         $event->update($data);
 

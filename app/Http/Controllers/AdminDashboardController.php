@@ -10,23 +10,33 @@ class AdminDashboardController
 {
     public function index()
     {
-        $events = Event::orderByDesc('starts_at')->get();
+        // Only events created by this admin (or not yet claimed by anyone).
+        $events = Event::where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereNull('user_id');
+            })
+            ->orderByDesc('starts_at')
+            ->get();
 
-        $totalRegistrations = Ticket::count();
+        $eventIds = $events->pluck('id');
 
-        $checkedIn = Ticket::whereNotNull('checked_in_at')
-            ->orWhereHas('attendance')
-            ->count();
+        $tickets = fn () => Ticket::whereIn('event_id', $eventIds);
 
-        $mealTaken = Ticket::where('meal_taken', true)->count();
+        $totalRegistrations = $tickets()->count();
 
-        $recentRegistrations = Ticket::with('event')
+        $checkedIn = $tickets()->where(function ($query) {
+            $query->whereNotNull('checked_in_at')->orWhereHas('attendance');
+        })->count();
+
+        $mealTaken = $tickets()->where('meal_taken', true)->count();
+
+        $recentRegistrations = $tickets()->with('event')
             ->orderByDesc('created_at')
             ->limit(5)
             ->get();
 
         // Breakdown by registrant type
-        $byType = Ticket::selectRaw('registrant_type, count(*) as total')
+        $byType = $tickets()->selectRaw('registrant_type, count(*) as total')
             ->groupBy('registrant_type')
             ->get()
             ->keyBy('registrant_type');
