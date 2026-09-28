@@ -35,6 +35,11 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium">Classroom</label>
+                    <input name="classroom" value="{{ old('classroom') }}" class="mt-1 block w-full rounded-lg border p-2">
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium">Status</label>
                     <select name="status" class="mt-1 block w-full rounded-lg border p-2">
                         <option value="published">published</option>

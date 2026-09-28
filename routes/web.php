@@ -84,6 +84,11 @@ Route::get('/certificate', [CertificateController::class, 'index'])
     ->withoutMiddleware([Authenticate::class])
     ->name('certificate.index');
 
+// E-sertifikat scoped to a single event, e.g. /e/mk-agustus-2026/certificate
+Route::get('/e/{event:slug}/certificate', [CertificateController::class, 'event'])
+    ->withoutMiddleware([Authenticate::class])
+    ->name('certificate.event');
+
 Route::post('/certificate/search', [CertificateController::class, 'search'])
     ->withoutMiddleware([Authenticate::class])
     ->name('certificate.search');

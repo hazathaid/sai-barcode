@@ -12,8 +12,17 @@ class CertificateController extends Controller
     // show search form
     public function index()
     {
-        $events = Event::orderByDesc('starts_at')->where('status', 'finished')->get();
+        $events = Event::whereNotNull('certificate_image')
+            ->orderByDesc('starts_at')
+            ->get();
+
         return view('certificates.index', compact('events'));
+    }
+
+    // show the certificate page scoped to a single event: /e/{slug}/certificate
+    public function event(Event $event)
+    {
+        return view('certificates.event', compact('event'));
     }
 
     // search tickets by phone or email
@@ -25,19 +34,18 @@ class CertificateController extends Controller
         ]);
 
         $q = $data['query'];
+        $event = Event::find($data['event_id']);
 
         $tickets = Ticket::with('event')
-            ->when($data['event_id'] ?? null, function($builder, $eventId){
-                return $builder->where('event_id', $eventId);
-            })
+            ->where('event_id', $data['event_id'])
             ->where(function($b) use ($q){
                 $b->where('phone', $q)
                   ->orWhere('email', $q);
             })
-            ->where('checked_in_at', '!=', null)
+            ->whereNotNull('checked_in_at')
             ->get();
 
-        return view('certificates.results', compact('tickets', 'q'));
+        return view('certificates.results', compact('tickets', 'q', 'event'));
     }
 
     // generate certificate image and download, increment counter

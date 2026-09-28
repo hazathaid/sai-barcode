@@ -22,6 +22,22 @@ class Event extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function isOwnedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        // Events created before ownership existed have no owner and stay
+        // manageable by any admin for backward compatibility.
+        return $this->user_id === null || $this->user_id === $user->id;
+    }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);

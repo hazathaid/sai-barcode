@@ -11,7 +11,7 @@ class AdminEventController
 {
     public function index()
     {
-        $events = Event::orderByDesc('starts_at')->paginate(20);
+        $events = Event::with('creator')->orderByDesc('starts_at')->paginate(20);
         return view('admin.events.index', compact('events'));
     }
 
@@ -28,6 +28,7 @@ class AdminEventController
             'starts_at' => 'required|date',
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
+            'classroom' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed,finished',
             'external_only' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
@@ -88,6 +89,9 @@ class AdminEventController
         // ensure external_only is set (checkbox may be absent when unchecked)
         $data['external_only'] = $request->has('external_only');
 
+        // record who created this event so only they can edit/delete it
+        $data['user_id'] = $request->user()?->id;
+
         Event::create($data);
 
         return redirect()->route('admin.events.index')->with('success','Event created');
@@ -95,17 +99,22 @@ class AdminEventController
 
     public function edit(Event $event)
     {
+        $this->authorizeOwnership($event);
+
         return view('admin.events.edit', compact('event'));
     }
 
     public function update(Request $request, Event $event)
     {
+        $this->authorizeOwnership($event);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:events,slug,' . $event->id,
             'starts_at' => 'required|date',
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'location' => 'nullable|string|max:255',
+            'classroom' => 'nullable|string|max:255',
             'status' => 'required|in:draft,published,closed,finished',
             'external_only' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
@@ -182,10 +191,24 @@ class AdminEventController
 
     public function destroy(Event $event)
     {
+        $this->authorizeOwnership($event);
+
         if ($event->image) {
             Storage::disk('public')->delete($event->image);
         }
         $event->delete();
         return redirect()->route('admin.events.index')->with('success','Event deleted');
+    }
+
+    /**
+     * Only the admin who created an event may edit or delete it.
+     * Events without an owner (created before ownership existed) stay
+     * manageable by any admin.
+     */
+    private function authorizeOwnership(Event $event): void
+    {
+        if (! $event->isOwnedBy(auth()->user())) {
+            abort(403, 'Anda hanya dapat mengubah atau menghapus event yang Anda buat sendiri.');
+        }
     }
 }

@@ -48,6 +48,16 @@
                     <p class="font-medium">{{ $event->description }} </p>
                     <p class="mt-2 text-sm text-gray-600">Silakan melakukan pendaftaran untuk mendapatkan barcode. Simpan barcode anda dan tunjukkan saat registrasi pada saat acara.</p>
                 </div>
+
+                @if($event->certificate_image || $event->status === 'finished')
+                    <div class="mt-4">
+                        <a href="{{ route('certificate.event', $event->slug) }}"
+                            class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600">
+                            <span>🎓</span>
+                            <span>Ambil E-Sertifikat</span>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <div class="bg-white p-6 rounded-lg shadow">
