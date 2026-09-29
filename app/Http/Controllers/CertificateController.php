@@ -12,7 +12,8 @@ class CertificateController extends Controller
     // show search form
     public function index()
     {
-        $events = Event::whereNotNull('certificate_image')
+        $events = Event::where('status', 'finished')
+            ->whereNotNull('certificate_image')
             ->orderByDesc('starts_at')
             ->get();
 
